@@ -22,7 +22,8 @@ const LoginPage: React.FC = () => {
           {!showTeacherTypes ? (
             <>
               <GoogleLoginButton 
-                userType={UserRole.ESTUDIANTE} 
+                userType={UserRole.ESTUDIANTE}
+                label="Acceso Estudiante"
               />
               <button 
                 className="back-button" 
@@ -37,14 +38,17 @@ const LoginPage: React.FC = () => {
               <GoogleLoginButton 
                 userType={UserRole.DOCENTE}
                 teacherType={TeacherType.COORDINADOR_ECOE}
+                label="Acceso Coordinador ECOE"
               />
               <GoogleLoginButton 
                 userType={UserRole.DOCENTE}
                 teacherType={TeacherType.COORDINADOR_ASIGNATURA}
+                label="Acceso Coordinador Asignatura"
               />
               <GoogleLoginButton 
                 userType={UserRole.DOCENTE}
                 teacherType={TeacherType.JEFE_CARRERA}
+                label="Acceso Jefe de Carrera"
               />
               <button 
                 className="back-button" 
