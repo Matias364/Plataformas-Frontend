@@ -15,10 +15,13 @@ export interface AuthCredentials {
 export interface AuthResponse {
   success: boolean;
   user?: {
-    name: string;
-    institutionalEmail: string;
-    role: UserRole;
-    teacherType?: TeacherType;
+    name: string;               // Nombre del usuario
+    institutionalEmail: string; // Email institucional (verificado por el dominio)
+    role: UserRole;             // Rol del usuario (Estudiante o Docente)
+    teacherType?: TeacherType;  // Tipo de docente (si es aplicable)
+    emailVerified: boolean;     // Si el correo está verificado
+    hd: string;                 // Dominio del correo (ej. "ucn.cl")
+    picture: string;            // Foto de perfil del usuario
   };
   error?: string;
 }

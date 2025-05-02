@@ -5,7 +5,8 @@ import LoginPage from './presentation/pages/Login/LoginPage'
 
 
 function App() {
-  return <LoginPage />
+  return <LoginPage/>
+  
 }
 
 export default App

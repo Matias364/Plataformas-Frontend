@@ -1,63 +1,57 @@
-// GoogleAuthService.ts
 import { IAuthService } from '../../application/auth/IAuthService';
 import { AuthResponse } from '../../domain/auth/AuthEntity';
 import { UserRole } from '../../domain/user/UserRole';
 import { TeacherType } from '../../domain/user/TeacherType';
 import axios from 'axios';
+import { saveUserData, clearUserData } from '../../storage/storage';  
 
-// Si no hay backend todavía
 export class GoogleAuthService implements IAuthService {
   async loginWithGoogle(userType: UserRole, teacherType?: TeacherType, token?: string): Promise<AuthResponse> {
-    console.log('Token recibido desde Google:', token);
-
-    // Simulación (Hasta que tengamos el backend con los endpoints necesarios)
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    return {
-      success: true,
-      user: {
-        name: 'Usuario de Prueba',
-        institutionalEmail: userType === UserRole.ESTUDIANTE 
-          ? 'estudiante@alumnos.ucn.cl'
-          : 'docente@ucn.cl',
-        role: userType,
-        teacherType: teacherType
-      }
-    };
-  }
-  /*
-  async loginWithGoogle(userType: UserRole, teacherType?: TeacherType, token?: string): Promise<AuthResponse> {
     try {
-      // Verificamos que el token haya sido recibido
       if (!token) throw new Error('Token de Google no proporcionado');
 
-      // Llamamos al backend con los datos necesarios para autenticar al usuario
-      const response = await axios.post('http://localhost:3000/api/auth/google-login', {
+      // Hacemos el llamado al backend con los datos necesarios para autenticar al usuario
+      const response = await axios.post('http://localhost:3000/api/v1/login', {
         token,          // Token JWT que entrega Google
         userType,       // Rol del usuario (ESTUDIANTE o DOCENTE)
         teacherType     // Tipo de docente, si aplica
       });
 
-      // El backend debe devolver un objeto con la estructura: { success, user, error }
-      return response.data as AuthResponse;
+      // Aquí, si la respuesta es exitosa, guardamos los tokens y los datos del usuario en localStorage
+      if (response.data.success) {
+        const { accessToken, refreshToken, user, expiresIn } = response.data; // Suponiendo que el backend te devuelve estos valores
+
+        // Guardamos en localStorage usando las funciones de storage
+        saveUserData(user, accessToken, refreshToken, expiresIn);
+
+        return {
+          success: true,
+          user: user,  
+        };
+      }
+
+      // Si no es exitoso, devuelve el error
+      return response.data;
     } catch (error) {
       console.error('Error en loginWithGoogle:', error);
 
       // Devolvemos una respuesta de error con formato compatible
       return {
         success: false,
-        error: 'Error durante la autenticación con el servidor'
+        error: 'Error durante la autenticación con el servidor',
       };
     }
   }
-  */
 
   async logout(): Promise<void> {
+    // Limpiamos los datos del usuario y tokens al hacer logout
+    clearUserData();
     return Promise.resolve();
   }
 
   async getCurrentUser(): Promise<AuthResponse | null> {
-    return null;
+    // Recuperamos los datos del usuario desde localStorage
+    const user = JSON.parse(localStorage.getItem('user_data') || 'null');
+    return user ? { success: true, user } : null;
   }
 }
-
