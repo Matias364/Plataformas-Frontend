@@ -38,7 +38,7 @@ const DashboardStudent = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative' }}>
       <SidebarStudent
         name={mockUser.name}
         picture={mockUser.picture}
@@ -50,10 +50,11 @@ const DashboardStudent = () => {
       <Box
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: {xs: 2, sm: 3},
           overflowY: 'auto',
           ml: { xs: 0, sm: '240px' },
-          width: 'calc(100vw - 240px)'
+          width: 'calc(100vw - 240px)',
+          height: "100%"
         }}
       >
         {selected === 'perfil' && (

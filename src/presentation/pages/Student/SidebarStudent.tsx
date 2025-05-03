@@ -34,7 +34,8 @@ const SidebarStudent: React.FC<SidebarStudentProps> = ({ name, picture, selected
       </ListItemButton>
     </List>
     <Box sx={{ flexGrow: 1 }} />
-    <Button
+    <Box sx={{ p:2}}>
+      <Button
       startIcon={<LogoutIcon />}
       variant="contained"
       sx={{
@@ -45,9 +46,10 @@ const SidebarStudent: React.FC<SidebarStudentProps> = ({ name, picture, selected
       }}
       onClick={onLogout}
       fullWidth
-    >
+      >
       Cerrar sesión
-    </Button>
+      </Button>
+    </Box>
   </Drawer>
 );
 
