@@ -2,20 +2,15 @@ import React from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { AuthUseCase } from '../../../application/auth/AuthUseCase';
 import { GoogleAuthService } from '../../../infrastructure/services/GoogleAuthService';
-import { UserRole } from '../../../domain/user/UserRole';
-import { TeacherType } from '../../../domain/user/TeacherType';
+
 
 interface GoogleLoginButtonProps {
-  userType: UserRole;
-  teacherType?: TeacherType;
   onSuccess?: () => void;
   label?: string; // Texto del botón
   color?: string; // Color del botón
 }
 
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
-  userType,
-  teacherType,
   onSuccess,
   label = "Acceder con Google",
   color = "#e0e0e0"
@@ -32,9 +27,9 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
         return;
       }
 
-      // Llamamos al método loginWithGoogle del useCase, pasándole los parámetros requeridos
+      // Llamamos al método loginWithGoogle del useCase, pasándole solo el token
       try {
-        const response = await authUseCase.loginWithGoogle(userType, teacherType, token);
+        const response = await authUseCase.loginWithGoogle(token);
         if (response.success) {
           alert(`Bienvenido, ${response.user?.name}`);
           if (onSuccess) onSuccess();  // Callback opcional para cuando el login es exitoso

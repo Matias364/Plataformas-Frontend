@@ -1,36 +1,18 @@
 import { IAuthService } from '../../application/auth/IAuthService';
 import { AuthResponse } from '../../domain/auth/AuthEntity';
-import { UserRole } from '../../domain/user/UserRole';
-import { TeacherType } from '../../domain/user/TeacherType';
 import axios from 'axios';
-import { saveUserData, clearUserData } from '../../storage/storage';  
 
 export class GoogleAuthService implements IAuthService {
-  async loginWithGoogle(userType: UserRole, teacherType?: TeacherType, token?: string): Promise<AuthResponse> {
+  async loginWithGoogle(token?: string): Promise<AuthResponse> {
     try {
       if (!token) throw new Error('Token de Google no proporcionado');
 
-      // Hacemos el llamado al backend con los datos necesarios para autenticar al usuario
+      // Hacemos el llamado al backend solo con el token para que el backend lo valide
       const response = await axios.post('http://localhost:3000/api/v1/login', {
-        token,          // Token JWT que entrega Google
-        userType,       // Rol del usuario (ESTUDIANTE o DOCENTE)
-        teacherType     // Tipo de docente, si aplica
+        token,  // Solo enviamos el token
       });
 
-      // Aquí, si la respuesta es exitosa, guardamos los tokens y los datos del usuario en localStorage
-      if (response.data.success) {
-        const { accessToken, refreshToken, user, expiresIn } = response.data; // Suponiendo que el backend te devuelve estos valores
-
-        // Guardamos en localStorage usando las funciones de storage
-        saveUserData(user, accessToken, refreshToken, expiresIn);
-
-        return {
-          success: true,
-          user: user,  
-        };
-      }
-
-      // Si no es exitoso, devuelve el error
+      // Devolvemos la respuesta desde el backend
       return response.data;
     } catch (error) {
       console.error('Error en loginWithGoogle:', error);
@@ -45,7 +27,10 @@ export class GoogleAuthService implements IAuthService {
 
   async logout(): Promise<void> {
     // Limpiamos los datos del usuario y tokens al hacer logout
-    clearUserData();
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_data');
+    localStorage.removeItem('expires_at');
     return Promise.resolve();
   }
 
