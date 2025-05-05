@@ -5,7 +5,7 @@ import { UserRole } from '../../domain/user/UserRole';
 
 
 export interface IAuthService {
-  loginWithGoogle(userType: UserRole, token?: string): Promise<AuthResponse>;
+  loginWithGoogle(userType: UserRole, code?: string): Promise<AuthResponse>;
   logout(): Promise<void>;
   getCurrentUser(): Promise<AuthResponse | null>;
 }

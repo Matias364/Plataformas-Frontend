@@ -8,8 +8,8 @@ import { UserRole } from '../../domain/user/UserRole';
 export class AuthUseCase {
   constructor(private authService: IAuthService) {}
 
-  async loginWithGoogle(userType: UserRole, token?: string): Promise<AuthResponse> {
-    return await this.authService.loginWithGoogle(userType, token);
+  async loginWithGoogle(userType: UserRole, code?: string): Promise<AuthResponse> {
+    return await this.authService.loginWithGoogle(userType, code);
   }
 
   async logout(): Promise<void> {

@@ -24,16 +24,17 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      const token = tokenResponse.access_token;
+      const code = tokenResponse.code
+      console.log(code);
 
-      if (!token) {
+      if (!code) {
         alert("Token de Google no recibido.");
         return;
       }
 
       // Llamamos al método loginWithGoogle del useCase, pasándole los parámetros requeridos
       try {
-        const response = await authUseCase.loginWithGoogle(userType, token);
+        const response = await authUseCase.loginWithGoogle(userType, code);
         if (response.success) {
           alert(`Bienvenido, ${response.user?.name}`);
           if (onSuccess) onSuccess();  // Callback opcional para cuando el login es exitoso
@@ -46,7 +47,8 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
       }
     },
     onError: () => alert("Falló el login de Google"),
-    flow: 'implicit',  // El flujo de login que estás usando
+    flow: 'auth-code',  
+    scope: "openid email profile",  
   });
 
   return (

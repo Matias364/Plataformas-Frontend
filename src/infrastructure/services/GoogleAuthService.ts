@@ -2,31 +2,40 @@ import { IAuthService } from '../../application/auth/IAuthService';
 import { AuthResponse } from '../../domain/auth/AuthEntity';
 import { UserRole } from '../../domain/user/UserRole';
 
+
+
 import axios from 'axios';
 import { saveUserData, clearUserData } from '../../storage/storage';  
+import { LOGIN_URL } from '../../constants';
 
 export class GoogleAuthService implements IAuthService {
-  async loginWithGoogle(userType: UserRole, token?: string): Promise<AuthResponse> {
+  async loginWithGoogle(userType: UserRole, code?: string): Promise<AuthResponse> {
     try {
-      if (!token) throw new Error('Token de Google no proporcionado');
-
+      if (!code) throw new Error('Código de Google no proporcionado');
+      console.log(LOGIN_URL);
       // Hacemos el llamado al backend con los datos necesarios para autenticar al usuario
-      const response = await axios.post('http://localhost:3000/api/v1/login', {
-        token,          // Token JWT que entrega Google
+      const response = await axios.post(LOGIN_URL, {
+        code,          // Token JWT que entrega Google
         userType,       // Rol del usuario (ESTUDIANTE o DOCENTE)
         
       });
-
+      
       // Aquí, si la respuesta es exitosa, guardamos los tokens y los datos del usuario en localStorage
-      if (response.data.success) {
-        const { accessToken, refreshToken, user, expiresIn } = response.data; // Suponiendo que el backend te devuelve estos valores
+      if (response.status === 200) {
+        //const { accessToken, refreshToken, user, expiresIn } = response.data; // Suponiendo que el backend te devuelve estos valores
+        const { accessToken} = response.data;
 
+        console.log("Acceso exitoso con token: ", accessToken);
+        saveUserData("",accessToken,"",10); 
+        // Guardamos el accessToken en localStorage
+        // Suponiendo que el backend te devuelve estos valores
         // Guardamos en localStorage usando las funciones de storage
-        saveUserData(user, accessToken, refreshToken, expiresIn);
+        //saveUserData(user, accessToken, refreshToken, expiresIn);
+        
 
         return {
           success: true,
-          user: user,  
+          //user: user,  
         };
       }
 
