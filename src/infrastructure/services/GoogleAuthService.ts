@@ -1,12 +1,12 @@
 import { IAuthService } from '../../application/auth/IAuthService';
 import { AuthResponse } from '../../domain/auth/AuthEntity';
 import { UserRole } from '../../domain/user/UserRole';
-import { TeacherType } from '../../domain/user/TeacherType';
+
 import axios from 'axios';
 import { saveUserData, clearUserData } from '../../storage/storage';  
 
 export class GoogleAuthService implements IAuthService {
-  async loginWithGoogle(userType: UserRole, teacherType?: TeacherType, token?: string): Promise<AuthResponse> {
+  async loginWithGoogle(userType: UserRole, token?: string): Promise<AuthResponse> {
     try {
       if (!token) throw new Error('Token de Google no proporcionado');
 
@@ -14,7 +14,7 @@ export class GoogleAuthService implements IAuthService {
       const response = await axios.post('http://localhost:3000/api/v1/login', {
         token,          // Token JWT que entrega Google
         userType,       // Rol del usuario (ESTUDIANTE o DOCENTE)
-        teacherType     // Tipo de docente, si aplica
+        
       });
 
       // Aquí, si la respuesta es exitosa, guardamos los tokens y los datos del usuario en localStorage

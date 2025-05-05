@@ -38,7 +38,7 @@ const DashboardStudent = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative', backgroundColor: '#ffffff' }}>
       <SidebarStudent
         name={mockUser.name}
         picture={mockUser.picture}
@@ -60,7 +60,7 @@ const DashboardStudent = () => {
         {selected === 'perfil' && (
           <Box>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-              <Typography variant="h4" color='#000000' fontWeight={700}>Mi Perfil ECOE</Typography>
+              <Typography variant="h4" color='#000000' fontWeight={700}>Mi Perfil ECOE </Typography>
               <Select value="ECOE 2025" size="small" sx={{ minWidth: 140 }}>
                 <MenuItem value="ECOE 2025">ECOE 2025</MenuItem>
               </Select>

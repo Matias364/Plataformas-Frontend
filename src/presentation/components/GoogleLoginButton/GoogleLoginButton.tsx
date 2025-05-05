@@ -15,7 +15,6 @@ interface GoogleLoginButtonProps {
 
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   userType,
-  teacherType,
   onSuccess,
   label = "Acceder con Google",
   color = "#e0e0e0"
@@ -34,7 +33,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 
       // Llamamos al método loginWithGoogle del useCase, pasándole los parámetros requeridos
       try {
-        const response = await authUseCase.loginWithGoogle(userType, teacherType, token);
+        const response = await authUseCase.loginWithGoogle(userType, token);
         if (response.success) {
           alert(`Bienvenido, ${response.user?.name}`);
           if (onSuccess) onSuccess();  // Callback opcional para cuando el login es exitoso
