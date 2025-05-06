@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import './LoginPage.css';
 import { UserRole } from '../../../domain/user/UserRole';
-import { TeacherType } from '../../../domain/user/TeacherType';
 import GoogleLoginButton from '../../components/GoogleLoginButton/GoogleLoginButton';
 
 const LoginPage: React.FC = () => {
@@ -36,18 +35,15 @@ const LoginPage: React.FC = () => {
             <>
               <h3>Seleccione tipo de docente</h3>
               <GoogleLoginButton 
-                userType={UserRole.DOCENTE}
-                teacherType={TeacherType.COORDINADOR_ECOE}
+                userType={UserRole.DOCENTE_ECOE}
                 label="Acceso Coordinador ECOE"
               />
               <GoogleLoginButton 
-                userType={UserRole.DOCENTE}
-                teacherType={TeacherType.COORDINADOR_ASIGNATURA}
+                userType={UserRole.DOCENTE_ASIGNATURA}
                 label="Acceso Coordinador Asignatura"
               />
               <GoogleLoginButton 
-                userType={UserRole.DOCENTE}
-                teacherType={TeacherType.JEFE_CARRERA}
+                userType={UserRole.JEFATURA}
                 label="Acceso Jefe de Carrera"
               />
               <button 

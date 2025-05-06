@@ -1,12 +1,13 @@
 import { IAuthService } from '../../application/auth/IAuthService';
 import { AuthResponse } from '../../domain/auth/AuthEntity';
 import { UserRole } from '../../domain/user/UserRole';
-
+import {jwtDecode} from 'jwt-decode';
 
 
 import axios from 'axios';
 import { saveUserData, clearUserData } from '../../storage/storage';  
 import { LOGIN_URL } from '../../constants';
+import { TokenPayloadDto } from '../../domain/auth/TokenPayloadDTO';
 
 export class GoogleAuthService implements IAuthService {
   async loginWithGoogle(userType: UserRole, code?: string): Promise<AuthResponse> {
@@ -19,7 +20,7 @@ export class GoogleAuthService implements IAuthService {
         userType,       // Rol del usuario (ESTUDIANTE o DOCENTE)
         
       });
-      
+      console.log("Respuesta completa del backend:", response);
       // Aquí, si la respuesta es exitosa, guardamos los tokens y los datos del usuario en localStorage
       if (response.status === 200) {
         //const { accessToken, refreshToken, user, expiresIn } = response.data; // Suponiendo que el backend te devuelve estos valores
@@ -35,6 +36,7 @@ export class GoogleAuthService implements IAuthService {
 
         return {
           success: true,
+          accessToken,
           //user: user,  
         };
       }
@@ -58,9 +60,14 @@ export class GoogleAuthService implements IAuthService {
     return Promise.resolve();
   }
 
-  async getCurrentUser(): Promise<AuthResponse | null> {
-    // Recuperamos los datos del usuario desde localStorage
-    const user = JSON.parse(localStorage.getItem('user_data') || 'null');
-    return user ? { success: true, user } : null;
+  async getCurrentUser(): Promise<TokenPayloadDto | null> {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) return null;
+    try {
+      const payload = jwtDecode<TokenPayloadDto>(accessToken);
+      return payload;
+    } catch (e) {
+      return null;
+    }
   }
 }

@@ -3,6 +3,7 @@
 import { IAuthService } from './IAuthService';
 import { AuthResponse } from '../../domain/auth/AuthEntity';
 import { UserRole } from '../../domain/user/UserRole';
+import { TokenPayloadDto } from '../../domain/auth/TokenPayloadDTO';
 
 
 export class AuthUseCase {
@@ -16,7 +17,7 @@ export class AuthUseCase {
     return await this.authService.logout();
   }
 
-  async getCurrentUser(): Promise<AuthResponse | null> {
+  async getCurrentUser(): Promise<TokenPayloadDto | null> {
     return await this.authService.getCurrentUser();
   }
 }

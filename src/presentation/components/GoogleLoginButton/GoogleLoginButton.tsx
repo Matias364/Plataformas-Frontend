@@ -3,11 +3,12 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { AuthUseCase } from '../../../application/auth/AuthUseCase';
 import { GoogleAuthService } from '../../../infrastructure/services/GoogleAuthService';
 import { UserRole } from '../../../domain/user/UserRole';
-import { TeacherType } from '../../../domain/user/TeacherType';
+import { useNavigate } from 'react-router-dom';
+import User from '../../../domain/user/User';
+
 
 interface GoogleLoginButtonProps {
   userType: UserRole;
-  teacherType?: TeacherType;
   onSuccess?: () => void;
   label?: string; // Texto del botón
   color?: string; // Color del botón
@@ -19,6 +20,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   label = "Acceder con Google",
   color = "#e0e0e0"
 }) => {
+  const navigate = useNavigate();
   const authService = new GoogleAuthService();
   const authUseCase = new AuthUseCase(authService);
 
@@ -35,9 +37,24 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
       // Llamamos al método loginWithGoogle del useCase, pasándole los parámetros requeridos
       try {
         const response = await authUseCase.loginWithGoogle(userType, code);
-        if (response.success) {
-          alert(`Bienvenido, ${response.user?.name}`);
-          if (onSuccess) onSuccess();  // Callback opcional para cuando el login es exitoso
+        console.log("response: ", response.accessToken);
+        if (response.success && response.accessToken) {
+          const accessToken = response.accessToken;
+          //console.log("role: ", response.user.role?.name);
+          const userInfo = await fetch('http://localhost:3000/api/v1/auth/user-info', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+            },
+          });
+          const data = await userInfo.json();
+          const userPayload = data.payload;
+          console.log(data.payload);
+          alert(`Bienvenido, ${userPayload.name}`);
+          if (userPayload.role === UserRole.ESTUDIANTE) {
+            console.log("onSuccess:");
+            navigate("/perfil")
+          };  // Callback opcional para cuando el login es exitoso
         } else {
           alert(`Error: ${response.error}`);
         }
