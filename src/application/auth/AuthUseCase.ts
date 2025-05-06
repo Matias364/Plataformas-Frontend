@@ -9,7 +9,7 @@ import { TokenPayloadDto } from '../../domain/auth/TokenPayloadDTO';
 export class AuthUseCase {
   constructor(private authService: IAuthService) {}
 
-  async loginWithGoogle(userType: UserRole, code?: string): Promise<AuthResponse> {
+  async loginWithGoogle(userType: UserRole, code?: string): Promise<void> {
     return await this.authService.loginWithGoogle(userType, code);
   }
 
