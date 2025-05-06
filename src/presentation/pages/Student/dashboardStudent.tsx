@@ -77,7 +77,7 @@ const DashboardStudent = () => {
                 sx={{ display: 'flex', overflowX: 'auto', gap: 2, pb: 2, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}
               >
                 {mockCompetencias.map(c => (
-                  <Paper key={c.nombre} sx={{ p: 3, borderRadius: 3, bgcolor: '#f7f7f7', textAlign: 'center', flexShrink: 0, width: { xs: 280, md: 320 } }}>
+                  <Paper key={c.nombre} sx={{ p: 3, borderRadius: 3, bgcolor: '#FBFBFB', textAlign: 'center', flexShrink: 0, width: { xs: 280, md: 320 } }}>
                     <Typography fontWeight={600}>{c.nombre}</Typography>
                     <Box sx={{ mt: 1, mb: 1 }}>
                       <Typography component="span" sx={{ bgcolor: '#e0e0e0', borderRadius: 1, px: 1.5, fontSize: 14 }}>
@@ -100,8 +100,14 @@ const DashboardStudent = () => {
             </Box>
 
             <Typography variant="h6" fontWeight={600} color='#5C5C5C' sx={{ mb: 2 }}>Promedio de ECOE 2025</Typography>
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: '#f7f7f7', textAlign: 'center', width: { xs: 280, md: 320 } }}>
-              <Typography fontWeight={500} sx={{ mb: 1 }}>Calificación Final</Typography>
+            <Paper sx={{ p: 3, borderRadius: 3, bgcolor: '#FBFBFB', textAlign: 'center', flexShrink: 0, width: { xs: 280, md: 320 } }}>
+              <Typography fontWeight={600}>Calificación Final</Typography>
+              <Box sx={{ mt: 1, mb: 1 }}>
+                <Typography component="span" sx={{ bgcolor: '#e0e0e0', borderRadius: 1, px: 1.5, fontSize: 14 }}>
+                  Nivel: <span style={{ color: '#6fcf97', fontWeight: 700 }}>SATISFACTORIO</span>
+                </Typography>
+              </Box>
+              <Typography fontWeight={500} sx={{ mb: 1 }}>Calificación</Typography>
               <Box sx={{ bgcolor: '#b8e7c1', color: '#222', fontSize: 32, fontWeight: 700, borderRadius: '50%', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1 }}>
                 {mockPromedio}
               </Box>
