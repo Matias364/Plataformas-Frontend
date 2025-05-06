@@ -280,7 +280,8 @@ const PerformanceStudent = () => {
                           sx={{ fontWeight: 700 }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell >
+                      <Stack direction="column" spacing={1}>
                         <Chip
                           label={item.nivel}
                           color={nivelColor(item.nivel)}
@@ -293,6 +294,7 @@ const PerformanceStudent = () => {
                           size="small"
                           sx={{ fontWeight: 700 }}
                         />
+                        </Stack>
                       </TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1}>
