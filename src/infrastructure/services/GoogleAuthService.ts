@@ -1,16 +1,16 @@
 import { IAuthService } from '../../application/auth/IAuthService';
 import { AuthResponse } from '../../domain/auth/AuthEntity';
 import { UserRole } from '../../domain/user/UserRole';
-import {jwtDecode} from 'jwt-decode';
+//import {jwtDecode} from 'jwt-decode';
 
 
 import axios from 'axios';
-import { saveUserData, clearUserData } from '../../storage/storage';  
-import { LOGIN_URL } from '../../constants';
+import { saveUserData, clearUserData, readFromStorage } from '../../storage/storage';  
+import { LOGIN_URL, USER_INFO_URL, VALIDATE_TOKEN_URL } from '../../constants';
 import { TokenPayloadDto } from '../../domain/auth/TokenPayloadDTO';
 
 export class GoogleAuthService implements IAuthService {
-  async loginWithGoogle(userType: UserRole, code?: string): Promise<AuthResponse> {
+  async loginWithGoogle(userType: UserRole, code?: string): Promise<void> {
     try {
       if (!code) throw new Error('Código de Google no proporcionado');
       console.log(LOGIN_URL);
@@ -34,23 +34,16 @@ export class GoogleAuthService implements IAuthService {
         //saveUserData(user, accessToken, refreshToken, expiresIn);
         
 
-        return {
-          success: true,
-          accessToken,
-          //user: user,  
-        };
+        
       }
 
       // Si no es exitoso, devuelve el error
-      return response.data;
+      
     } catch (error) {
       console.error('Error en loginWithGoogle:', error);
 
       // Devolvemos una respuesta de error con formato compatible
-      return {
-        success: false,
-        error: 'Error durante la autenticación con el servidor',
-      };
+      
     }
   }
 
@@ -61,13 +54,23 @@ export class GoogleAuthService implements IAuthService {
   }
 
   async getCurrentUser(): Promise<TokenPayloadDto | null> {
-    const accessToken = localStorage.getItem('access_token');
-    if (!accessToken) return null;
-    try {
-      const payload = jwtDecode<TokenPayloadDto>(accessToken);
-      return payload;
-    } catch (e) {
-      return null;
-    }
+    const accessToken = readFromStorage('access_token');
+    if (!accessToken) {
+      return null; // Si no hay token, devolvemos null
+    } 
+    const userInfo = await fetch(USER_INFO_URL, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+    const data = await userInfo.json();
+    console.log("Respuesta del backend:", data);
+    const tokenPayload: TokenPayloadDto = {
+      sub: data.payload.sub,
+      email: data.payload.email,
+      role: data.payload.role, 
+  }
+  return tokenPayload;
   }
 }
