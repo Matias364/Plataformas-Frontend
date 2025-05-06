@@ -4,7 +4,9 @@ import { AuthUseCase } from '../../../application/auth/AuthUseCase';
 import { GoogleAuthService } from '../../../infrastructure/services/GoogleAuthService';
 import { UserRole } from '../../../domain/user/UserRole';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import User from '../../../domain/user/User';
+import { readFromStorage } from '../../../storage/storage';
 
 
 interface GoogleLoginButtonProps {
@@ -23,6 +25,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   const navigate = useNavigate();
   const authService = new GoogleAuthService();
   const authUseCase = new AuthUseCase(authService);
+  const { validateToken } = useAuth();
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -30,34 +33,23 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
       console.log(code);
 
       if (!code) {
-        alert("Token de Google no recibido.");
+        console.error("Token de Google no recibido.");
         return;
       }
 
       // Llamamos al método loginWithGoogle del useCase, pasándole los parámetros requeridos
       try {
-        const response = await authUseCase.loginWithGoogle(userType, code);
-        console.log("response: ", response.accessToken);
-        if (response.success && response.accessToken) {
-          const accessToken = response.accessToken;
-          //console.log("role: ", response.user.role?.name);
-          const userInfo = await fetch('http://localhost:3000/api/v1/auth/user-info', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-            },
-          });
-          const data = await userInfo.json();
-          const userPayload = data.payload;
-          console.log(data.payload);
-          alert(`Bienvenido, ${userPayload.name}`);
-          if (userPayload.role === UserRole.ESTUDIANTE) {
-            console.log("onSuccess:");
-            navigate("/perfil")
-          };  // Callback opcional para cuando el login es exitoso
-        } else {
-          alert(`Error: ${response.error}`);
-        }
+        await authUseCase.loginWithGoogle(userType, code);
+        
+        
+        const userPayload = await authUseCase.getCurrentUser(); // Obtenemos el payload del token
+          
+        if (userPayload?.role === UserRole.ESTUDIANTE) {
+          
+          await validateToken();
+          navigate("/perfil");
+        };  // Callback opcional para cuando el login es exitoso
+        
       } catch (error) {
         alert("Error durante la autenticación");
         console.error(error);
@@ -96,3 +88,5 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 };
 
 export default GoogleLoginButton;
+
+
