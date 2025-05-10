@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './LoginPage.css';
 import { UserRole } from '../../../domain/user/UserRole';
 import GoogleLoginButton from '../../components/GoogleLoginButton/GoogleLoginButton';
 import axios from 'axios';
 import { saveToStorage } from '../../../storage/storage';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
   const [showTeacherTypes, setShowTeacherTypes] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState('');
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   const [showAdminForm, setShowAdminForm] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      // Redirige según el rol
+      if (user.role === "estudiante") navigate("/perfil");
+      // Agrega más roles si es necesario
+    }
+  }, [user, navigate]);
+
+  if (loading || user) {
+    // Puedes mostrar un spinner o simplemente nada
+    return <div>Cargando...</div>;
+  }
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -3,10 +3,6 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { AuthUseCase } from '../../../application/auth/AuthUseCase';
 import { GoogleAuthService } from '../../../infrastructure/services/GoogleAuthService';
 import { UserRole } from '../../../domain/user/UserRole';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-
-
 
 interface GoogleLoginButtonProps {
   userType: UserRole;
@@ -20,45 +16,28 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   label = "Acceder con Google",
   color = "#e0e0e0"
 }) => {
-  const navigate = useNavigate();
   const authService = new GoogleAuthService();
   const authUseCase = new AuthUseCase(authService);
-  const { validateUser } = useAuth();
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      const code = tokenResponse.code
-      console.log(code);
-
+      const code = tokenResponse.code;
       if (!code) {
         console.error("Token de Google no recibido.");
         return;
       }
-
-      // Llamamos al método loginWithGoogle del useCase, pasándole los parámetros requeridos
       try {
         await authUseCase.loginWithGoogle(userType, code);
-        
-        
-        const userPayload = await authUseCase.getCurrentUser(); // Obtenemos el payload del token
-        if (!userPayload) {
-          throw new Error("El usuario no está autenticado");
-        }
-        console.log("Payload del usuario:", userPayload);
-        if (userPayload?.role === UserRole.ESTUDIANTE) {
-          console.log("Rol del usuario: Estudiante");
-          validateUser();
-          navigate("/perfil");
-        };  // Callback opcional para cuando el login es exitoso
-        
+        // Forzar recarga y navegación al home
+        window.location.href = '/';
       } catch (error) {
         alert("Error durante la autenticación");
         console.error(error);
       }
     },
     onError: () => alert("Falló el login de Google"),
-    flow: 'auth-code',  
-    scope: "openid email profile",  
+    flow: 'auth-code',
+    scope: "openid email profile",
   });
 
   return (
@@ -89,5 +68,3 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 };
 
 export default GoogleLoginButton;
-
-
