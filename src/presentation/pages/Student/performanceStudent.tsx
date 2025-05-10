@@ -134,17 +134,11 @@ const calcularPorcentajeCompetenciasGlobal = (
 };
 
 // Gráfico de barra: promedio de nota global por asignatura (en %)
-const dataBarraAsignaturas = mockAsignaturas.map(asig => ({
-  asignatura: asig.nombre,
-  porcentaje: Math.round((asig.calificacion / 7) * 100),
-}));
+
 
 const competenciasGrafico = calcularPorcentajeCompetenciasGlobal(mockAsignaturas, mockCompetencias);
 
-const competenciasPorAsignatura = mockAsignaturas.map(asig => ({
-  asignatura: asig.nombre,
-  competencias: asig.competencias.length,
-}));
+
 
 const PerformanceStudent = () => {
   const [selected, setSelected] = useState('rendimiento');

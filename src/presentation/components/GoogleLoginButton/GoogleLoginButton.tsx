@@ -5,8 +5,7 @@ import { GoogleAuthService } from '../../../infrastructure/services/GoogleAuthSe
 import { UserRole } from '../../../domain/user/UserRole';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import User from '../../../domain/user/User';
-import { readFromStorage } from '../../../storage/storage';
+
 
 
 interface GoogleLoginButtonProps {
@@ -18,14 +17,13 @@ interface GoogleLoginButtonProps {
 
 const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   userType,
-  onSuccess,
   label = "Acceder con Google",
   color = "#e0e0e0"
 }) => {
   const navigate = useNavigate();
   const authService = new GoogleAuthService();
   const authUseCase = new AuthUseCase(authService);
-  const { validateToken } = useAuth();
+  const { validateUser } = useAuth();
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -43,10 +41,13 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
         
         
         const userPayload = await authUseCase.getCurrentUser(); // Obtenemos el payload del token
-          
+        if (!userPayload) {
+          throw new Error("El usuario no está autenticado");
+        }
+        console.log("Payload del usuario:", userPayload);
         if (userPayload?.role === UserRole.ESTUDIANTE) {
-          
-          await validateToken();
+          console.log("Rol del usuario: Estudiante");
+          validateUser();
           navigate("/perfil");
         };  // Callback opcional para cuando el login es exitoso
         

@@ -1,13 +1,12 @@
 import { IAuthService } from '../../application/auth/IAuthService';
-import { AuthResponse } from '../../domain/auth/AuthEntity';
-import { UserRole } from '../../domain/user/UserRole';
-//import {jwtDecode} from 'jwt-decode';
 
+import { UserRole } from '../../domain/user/UserRole';
 
 import axios from 'axios';
 import { saveUserData, clearUserData, readFromStorage } from '../../storage/storage';  
-import { LOGIN_URL, USER_INFO_URL, VALIDATE_TOKEN_URL } from '../../constants';
-import { TokenPayloadDto } from '../../domain/auth/TokenPayloadDTO';
+import { LOGIN_URL, USER_INFO_URL } from '../../constants';
+import { UserPayloadDto } from '../../domain/user/UserPayloadDto';
+
 
 export class GoogleAuthService implements IAuthService {
   async loginWithGoogle(userType: UserRole, code?: string): Promise<void> {
@@ -53,7 +52,7 @@ export class GoogleAuthService implements IAuthService {
     return Promise.resolve();
   }
 
-  async getCurrentUser(): Promise<TokenPayloadDto | null> {
+  async getCurrentUser(): Promise<UserPayloadDto | null> {
     const accessToken = readFromStorage('access_token');
     if (!accessToken) {
       return null; // Si no hay token, devolvemos null
@@ -64,13 +63,20 @@ export class GoogleAuthService implements IAuthService {
         'Authorization': `Bearer ${accessToken}`,
       },
     });
+
+    if (!userInfo.ok) {
+      return null;
+    }
+    
     const data = await userInfo.json();
+    
     console.log("Respuesta del backend:", data);
-    const tokenPayload: TokenPayloadDto = {
-      sub: data.payload.sub,
-      email: data.payload.email,
-      role: data.payload.role, 
-  }
-  return tokenPayload;
+    const userPayloadDto: UserPayloadDto = {
+      id: data.id,
+      email: data.email,
+      role: data.role, 
+    }
+  
+  return userPayloadDto;
   }
 }

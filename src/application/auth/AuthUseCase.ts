@@ -1,9 +1,10 @@
 //Caso de uso de autenticación
 //metodos loginWithGoogle, logout y getCurrentUser
 import { IAuthService } from './IAuthService';
-import { AuthResponse } from '../../domain/auth/AuthEntity';
+
 import { UserRole } from '../../domain/user/UserRole';
-import { TokenPayloadDto } from '../../domain/auth/TokenPayloadDTO';
+
+import { UserPayloadDto } from '../../domain/user/UserPayloadDto';
 
 
 export class AuthUseCase {
@@ -17,7 +18,7 @@ export class AuthUseCase {
     return await this.authService.logout();
   }
 
-  async getCurrentUser(): Promise<TokenPayloadDto | null> {
+  async getCurrentUser(): Promise<UserPayloadDto | null> {
     return await this.authService.getCurrentUser();
   }
 }
