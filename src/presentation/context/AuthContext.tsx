@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoogleAuthService } from "../../infrastructure/services/GoogleAuthService";
 import { UserPayloadDto } from "../../domain/user/UserPayloadDto";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   user: UserPayloadDto | null;
@@ -15,6 +16,7 @@ export const useAuth = () => useContext(AuthContext) as AuthContextType;
 export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
   const [user, setUser] = useState<UserPayloadDto | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const validateUser = async () => {
     setLoading(true);
@@ -22,10 +24,15 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     const currentUser = await googleAuthService.getCurrentUser();
     setUser(currentUser);
     setLoading(false);
+
+    if (!currentUser) {
+      navigate("/login");
+    }
   };
 
   useEffect(() => {
     validateUser();
+    
   }, []);
 
   return (
