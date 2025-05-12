@@ -6,6 +6,7 @@ import axios from 'axios';
 import { saveToStorage } from '../../../storage/storage';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { LOGIN_ADMIN_URL } from '../../../constants';
 
 const LoginPage: React.FC = () => {
   const [showTeacherTypes, setShowTeacherTypes] = useState(false);
@@ -34,11 +35,12 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setAdminError('');
     try {
-      const response = await axios.post('/api/auth/login-local', {
+      const response = await axios.post(LOGIN_ADMIN_URL, {
         email: adminEmail,
         password: adminPassword,
       });
       const { accessToken, refreshToken } = response.data;
+      console.log('Admin logeado');
       saveToStorage('access_token', accessToken);
       saveToStorage('refresh_token', refreshToken);
       // window.location.href = '/';
