@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SidebarStudent from './SidebarStudent';
 import {
   Box, Typography, Paper, Select, MenuItem, Chip, Table, TableBody, TableCell,
@@ -7,96 +7,16 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, Cell } from 'recharts';
 
+
+
 // MOCKS
 const mockUser = {
   name: "Hackerman Estudiante",
   picture: "https://randomuser.me/api/portraits/men/32.jpg"
 };
 
-const mockAsignaturas = [
-  {
-    nombre: "Comunicación efectiva en enfermería",
-    codigo: "ENF2101",
-    semestre: "2025-1",
-    calificacion: 6.5,
-    nivel: "SATISFACTORIO",
-    competencias: ["Comunicación efectiva", "Gestión del cuidado"],
-    notasCompetencias: {
-      "Comunicación efectiva": 5,
-      "Gestión del cuidado": 6,
-    }
-  },
-  {
-    nombre: "Cuidados de enfermería en paciente crítico",
-    codigo: "ENF3205",
-    semestre: "2025-1",
-    calificacion: 6.0,
-    nivel: "SATISFACTORIO",
-    competencias: ["Comunicación efectiva"],
-    notasCompetencias: {
-      "Comunicación efectiva": 7,
-    }
-  },
-  {
-    nombre: "Gestión en servicios de salud",
-    codigo: "ENF4102",
-    semestre: "2025-1",
-    calificacion: 5.8,
-    nivel: "SUFICIENTE",
-    competencias: ["Gestión del cuidado"],
-    notasCompetencias: {
-      "Gestión del cuidado": 5,
-    }
-  },
-  {
-    nombre: "Investigación en enfermería",
-    codigo: "ENF3106",
-    semestre: "2025-1",
-    calificacion: 6.2,
-    nivel: "SATISFACTORIO",
-    competencias: ["Investigación"],
-    notasCompetencias: {
-      "Investigación": 6,
-    }
-  },
-];
-
 // Define the Competencia type
-type Competencia = {
-  name: string;
-  color: string;
-};
 
-const mockCompetencias: Competencia[] = [
-  { name: "Comunicación efectiva", color: "#0088FE" },
-  { name: "Gestión del cuidado", color: "#00C49F" },
-  { name: "Competencia asistencial", color: "#FFBB28" },
-  { name: "Bases científicas", color: "#A28CFE" },
-  { name: "Gestión y liderazgo", color: "#FF8042" },
-  { name: "Investigación", color: "#FF6699" },
-  { name: "Ética profesional", color: "#33CC99" },
-];
-
-const mockHistorial = [
-  {
-    codigo: "ENF2101",
-    nombre: "Comunicación efectiva en enfermería",
-    semestre: "2025-1",
-    calificacion: 6.5,
-    nivel: "APROBADO",
-    nivel2: "SATISFACTORIO",
-    competencias: ["Comunicación efectiva", "Gestión del cuidado"]
-  },
-  {
-    codigo: "ENF2204",
-    nombre: "Ética y legislación en enfermería",
-    semestre: "2024-2",
-    calificacion: 6.7,
-    nivel: "APROBADO",
-    nivel2: "SATISFACTORIO",
-    competencias: ["Ética profesional", "Comunicación efectiva"]
-  }
-];
 
 // UTILS
 const nivelColor = (nivel: string) => {
@@ -109,56 +29,115 @@ const nivelColor = (nivel: string) => {
 };
 
 // Calcula el promedio de cada competencia considerando todas las asignaturas donde aparece
-const calcularPorcentajeCompetenciasGlobal = (
-  asignaturas: typeof mockAsignaturas,
-  competenciasRef: typeof mockCompetencias,
-  max = 7
-) => {
-  const notasPorCompetencia: Record<string, number[]> = {};
-  asignaturas.forEach(asig => {
-    if (asig.notasCompetencias) {
-      Object.entries(asig.notasCompetencias).forEach(([comp, nota]) => {
-        if (!notasPorCompetencia[comp]) notasPorCompetencia[comp] = [];
-        notasPorCompetencia[comp].push(nota);
-      });
-    }
-  });
-  return competenciasRef.map(({ name, color }) => {
-    const notas = notasPorCompetencia[name] || [];
-    const value =
-      notas.length > 0
-        ? Math.round((notas.reduce((a, b) => a + b, 0) / notas.length / max) * 100)
-        : 0;
-    return { name, value, color };
-  });
-};
+
+
+// IDs o nombres de asignaturas a las que se les asigna competencia 1 y 5
+const competencia1Asignaturas = [
+  "Enfermería y ciencias biológicas",
+  "Morfología integral en enfermería",
+  "Bases integrales de la enfermería"
+];
+const competencia5Asignaturas = [
+  "Desarrollo personal y bienestar"
+];
 
 // Gráfico de barra: promedio de nota global por asignatura (en %)
-
-
-const competenciasGrafico = calcularPorcentajeCompetenciasGlobal(mockAsignaturas, mockCompetencias);
-
-
 
 const PerformanceStudent = () => {
   const [selected, setSelected] = useState('rendimiento');
   const [search, setSearch] = useState('');
+  const [userData, setUserData] = useState<any>(null);
+  const [asignaturas, setAsignaturas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Obtener info del estudiante
+        const accessToken = localStorage.getItem('access_token');
+        console.log("Token de acceso:", accessToken);
+
+        const resStudent = await fetch('http://localhost:3001/api/v1/students/me', {
+          headers: {
+            Authorization: `Bearer ${accessToken?.replace(/"/g, '')}`,
+          },
+        });
+        const student = await resStudent.json();
+        setUserData(student);
+
+        // Obtener info de cada asignatura
+        const asignaturasData = await Promise.all(
+          (student.subjects || []).map(async (subj: any) => {
+            const resAsig = await fetch(`http://localhost:3001/api/v1/subjects/${subj.asignaturaId}`);
+            const asigInfo = await resAsig.json();
+
+            // Asignar competencias según nombre de la asignatura
+            let competencias: string[] = [];
+            if (competencia1Asignaturas.includes(asigInfo.nombre)) {
+              competencias.push("Competencia 1");
+            }
+            if (competencia5Asignaturas.includes(asigInfo.nombre)) {
+              competencias.push("Competencia 5");
+            }
+
+            return {
+              ...asigInfo,
+              calificacion: subj.nota,
+              semestre: subj.semestre,
+              competencias,
+              notasCompetencias: {},
+              nivel: subj.nota >= 6 ? "SATISFACTORIO" : subj.nota >= 4 ? "SUFICIENTE" : "REPROBADO",
+            };
+          })
+        );
+        setAsignaturas(asignaturasData);
+      } catch (e) {
+        // Manejo de error simple
+        setAsignaturas([]);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  // Calcular porcentaje de competencias 1 y 5
+  const totalCompetencia1EnMalla = 29;
+  const totalCompetencia5EnMalla = 21;
+  const cantidadCompetencia1 = asignaturas.filter(a => (a.competencias || []).includes("Competencia 1")).length;
+  const cantidadCompetencia5 = asignaturas.filter(a => (a.competencias || []).includes("Competencia 5")).length;
+  const porcentajeCompetencia1 = totalCompetencia1EnMalla > 0 ? Math.round((cantidadCompetencia1 / totalCompetencia1EnMalla) * 100) : 0;
+  const porcentajeCompetencia5 = totalCompetencia5EnMalla > 0 ? Math.round((cantidadCompetencia5 / totalCompetencia5EnMalla) * 100) : 0;
 
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/';
   };
 
-  const filteredHistorial = mockHistorial.filter(
+  const filteredHistorial = asignaturas.filter(
     (item) =>
-      item.nombre.toLowerCase().includes(search.toLowerCase()) ||
-      item.codigo.toLowerCase().includes(search.toLowerCase())
+      item.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+      item.codigo?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Solo mostrar Competencia 1 y 5 en el gráfico, con el valor en porcentaje
+  const competenciasGrafico = [
+    {
+      name: "Competencia 1",
+      value: porcentajeCompetencia1,
+      color: "#1976d2"
+    },
+    {
+      name: "Competencia 5",
+      value: porcentajeCompetencia5,
+      color: "#FF8042"
+    }
+  ];
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#ffffff' }}>
       <SidebarStudent
-        name={mockUser.name}
+        name={userData?.rut|| mockUser.name}
         picture={mockUser.picture}
         selected={selected}
         onSelect={setSelected}
@@ -202,50 +181,54 @@ const PerformanceStudent = () => {
                 Relación entre asignaturas cursadas y competencias ECOE
               </Typography>
               <Divider sx={{ mb: 2 }} />
-              <Stack spacing={2}>
-                {mockAsignaturas.map((asig) => (
-                  <Paper key={asig.codigo} variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#FBFBFB' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box>
-                        <Typography fontWeight={700} sx={{ color: '#1976d2' }}>
-                          {asig.nombre}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {asig.codigo} • Semestre {asig.semestre}
-                        </Typography>
-                        {asig.competencias.length > 0 && (
-                          <Box sx={{ mt: 1 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              Competencias ECOE desarrolladas en esta asignatura:
-                            </Typography>
-                            <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                              {asig.competencias.map((comp) => (
-                                <Chip
-                                  key={comp}
-                                  label={comp}
-                                  size="small"
-                                  sx={{ bgcolor: 'rgba(25, 118, 210, 0.08)', color: '#1976d2', fontWeight: 600 }}
-                                />
-                              ))}
-                            </Stack>
-                          </Box>
-                        )}
+              {loading ? (
+                <Typography>Cargando...</Typography>
+              ) : (
+                <Stack spacing={2}>
+                  {asignaturas.map((asig) => (
+                    <Paper key={asig.codigo} variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#FBFBFB' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography fontWeight={700} sx={{ color: '#1976d2' }}>
+                            {asig.nombre}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {asig.codigo} • Semestre {asig.semestre}
+                          </Typography>
+                          {asig.competencias.length > 0 && (
+                            <Box sx={{ mt: 1 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                Competencias ECOE desarrolladas en esta asignatura:
+                              </Typography>
+                              <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                                {asig.competencias.map((comp: string) => (
+                                  <Chip
+                                    key={comp}
+                                    label={comp}
+                                    size="small"
+                                    sx={{ bgcolor: 'rgba(25, 118, 210, 0.08)', color: '#1976d2', fontWeight: 600 }}
+                                  />
+                                ))}
+                              </Stack>
+                            </Box>
+                          )}
+                        </Box>
+                        <Box sx={{ textAlign: 'right', minWidth: 80 }}>
+                          <Typography fontWeight={700} sx={{ fontSize: 18 }}>
+                            {asig.calificacion?.toFixed(1)}
+                          </Typography>
+                          <Chip
+                            label={asig.nivel}
+                            color={nivelColor(asig.nivel)}
+                            size="small"
+                            sx={{ fontWeight: 700, mt: 1 }}
+                          />
+                        </Box>
                       </Box>
-                      <Box sx={{ textAlign: 'right', minWidth: 80 }}>
-                        <Typography fontWeight={700} sx={{ fontSize: 18 }}>
-                          {asig.calificacion.toFixed(1)}
-                        </Typography>
-                        <Chip
-                          label={asig.nivel}
-                          color={nivelColor(asig.nivel)}
-                          size="small"
-                          sx={{ fontWeight: 700, mt: 1 }}
-                        />
-                      </Box>
-                    </Box>
-                  </Paper>
-                ))}
-              </Stack>
+                    </Paper>
+                  ))}
+                </Stack>
+              )}
             </Paper>
 
             {/* Desarrollo de Competencias */}
@@ -256,12 +239,12 @@ const PerformanceStudent = () => {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Nivel de desarrollo por competencia ECOE
               </Typography>
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={180}>
                 <BarChart
                   data={competenciasGrafico}
                   layout="vertical"
                   margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
-                  barCategoryGap={12}
+                  barCategoryGap={20}
                 >
                   <XAxis type="number" domain={[0, 100]} hide />
                   <YAxis
@@ -270,9 +253,9 @@ const PerformanceStudent = () => {
                     width={140}
                     tick={{ fontSize: 13, fill: '#222' }}
                   />
-                  <Tooltip />
+                  <Tooltip formatter={(value: number) => `${value}%`} />
                   <Bar dataKey="value" radius={[8, 8, 8, 8]}>
-                    <LabelList dataKey="value" position="right" />
+                    <LabelList dataKey="value" position="right" formatter={(value: number) => `${value}%`} />
                     {competenciasGrafico.map((entry) => (
                       <Cell key={entry.name} fill={entry.color} />
                     ))}
@@ -281,6 +264,12 @@ const PerformanceStudent = () => {
               </ResponsiveContainer>
               <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
                 • Porcentaje de desarrollo basado en asignaturas cursadas
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                Competencia 1: {porcentajeCompetencia1}% ({cantidadCompetencia1} de {totalCompetencia1EnMalla})
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                Competencia 5: {porcentajeCompetencia5}% ({cantidadCompetencia5} de {totalCompetencia5EnMalla})
               </Typography>
             </Paper>
           </Box>
@@ -330,7 +319,7 @@ const PerformanceStudent = () => {
                       <TableCell>{item.semestre}</TableCell>
                       <TableCell>
                         <Chip
-                          label={item.calificacion.toFixed(1)}
+                          label={item.calificacion?.toFixed(1)}
                           color="success"
                           size="small"
                           sx={{ fontWeight: 700 }}
@@ -344,17 +333,19 @@ const PerformanceStudent = () => {
                             size="small"
                             sx={{ fontWeight: 700, mr: 0.5 }}
                           />
-                          <Chip
-                            label={item.nivel2}
-                            color={nivelColor(item.nivel2)}
-                            size="small"
-                            sx={{ fontWeight: 700 }}
-                          />
+                          {item.nivel2 && (
+                            <Chip
+                              label={item.nivel2}
+                              color={nivelColor(item.nivel2)}
+                              size="small"
+                              sx={{ fontWeight: 700 }}
+                            />
+                          )}
                         </Stack>
                       </TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1}>
-                          {item.competencias.map((comp) => (
+                          {(item.competencias || []).map((comp: string) => (
                             <Chip
                               key={comp}
                               label={comp}
