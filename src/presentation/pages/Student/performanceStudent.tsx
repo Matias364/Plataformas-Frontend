@@ -69,7 +69,7 @@ const PerformanceStudent = () => {
         // Obtener info de cada asignatura
         const asignaturasData = await Promise.all(
           (student.subjects || []).map(async (subj: any) => {
-            const resAsig = await fetch(`http://localhost:3001/api/v1/subjects/${subj.asignaturaId}`);
+            const resAsig = await fetch(`http://localhost:3001/api/v1/subjects/${subj.subjectId}`);
             const asigInfo = await resAsig.json();
 
             // Asignar competencias según nombre de la asignatura
@@ -83,11 +83,11 @@ const PerformanceStudent = () => {
 
             return {
               ...asigInfo,
-              calificacion: subj.nota,
-              semestre: subj.semestre,
+              calificacion: subj.grade,
+              semestre: subj.semester,
               competencias,
               notasCompetencias: {},
-              nivel: subj.nota >= 6 ? "SATISFACTORIO" : subj.nota >= 4 ? "SUFICIENTE" : "REPROBADO",
+              nivel: subj.grade >= 6 ? "SATISFACTORIO" : subj.grade >= 4 ? "SUFICIENTE" : "REPROBADO",
             };
           })
         );
