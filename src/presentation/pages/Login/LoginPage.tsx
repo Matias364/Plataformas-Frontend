@@ -51,89 +51,96 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="login-container">
-      <div className="login-card">
+      <div className="login-card" style={{ maxWidth: 400, margin: "0 auto" }}>
         <img 
           src="/src/presentation/assets/logo_ucn.png" 
           alt="Universidad Católica del Norte" 
           className="ucn-logo"
         />
-        <h2>Inicio de sesión</h2>
-
-        {!showTeacherTypes ? (
-          <>
-            {!showAdminForm ? (
-              <div className="login-buttons">
-                <button
-                  className="back-button"
-                  style={{ marginBottom: 16 }}
-                  onClick={() => setShowAdminForm(true)}
-                >
-                  Acceso Administrador
-                </button>
-                <GoogleLoginButton 
-                  userType={UserRole.ESTUDIANTE}
-                  label="Acceso Estudiante"
-                />
-                <button 
-                  className="back-button" 
-                  style={{ marginTop: 16 }}
-                  onClick={() => setShowTeacherTypes(true)}
-                >
-                  Acceso Docente
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleAdminLogin} className="admin-login-form" style={{ marginBottom: 24 }}>
-                <h3>Administrador Local</h3>
-                <input
-                  type="email"
-                  placeholder="Correo"
-                  value={adminEmail}
-                  onChange={e => setAdminEmail(e.target.value)}
-                  required
-                />
-                <input
-                  type="password"
-                  placeholder="Contraseña"
-                  value={adminPassword}
-                  onChange={e => setAdminPassword(e.target.value)}
-                  required
-                />
-                <button type="submit" className="back-button">
-                  Ingresar
-                </button>
-                {adminError && <div className="error-message">{adminError}</div>}
-                <button
-                  type="button"
-                  className="back-button"
-                  style={{ marginTop: 16 }}
-                  onClick={() => setShowAdminForm(false)}
-                >
-                  Volver
-                </button>
-              </form>
-            )}
-          </>
-        ) : (
-          <div className="login-buttons">
-            <h3>Seleccione tipo de docente</h3>
-            <GoogleLoginButton 
-              userType={UserRole.DOCENTE_ECOE}
-              label="Acceso Coordinador ECOE"
-            />
-            <GoogleLoginButton 
-              userType={UserRole.DOCENTE_ASIGNATURA}
-              label="Acceso Coordinador Asignatura"
-            />
-            <button 
-              className="back-button" 
-              style={{ marginTop: 16 }}
-              onClick={() => setShowTeacherTypes(false)}
+        <h2 style={{ textAlign: "center"}}>Acceder</h2>
+        <div className="login-buttons" style={{ gap: 12, display: "flex", flexDirection: "column" }}>
+          {!showTeacherTypes ? (
+            <button
+              type="button"
+              className="back-button"
+               style={{
+                backgroundColor: "#e0e0e0",
+                color: "#000",
+                width: "100%",
+                padding: "12px",
+                border: "none",
+                borderRadius: "4px",
+                marginBottom: "16px",
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+              onClick={() => setShowTeacherTypes(true)}
             >
-              Volver
+              <img src="/src/presentation/assets/google icon.png" alt="Google" style={{ width: 18, height: 18, marginRight: 10 }} />
+              Acceso Docente
             </button>
-          </div>
-        )}
+          ) : (
+            <>
+              <GoogleLoginButton
+                userType={UserRole.DOCENTE_ECOE}
+                label="Acceso Docente ECOE"
+              />
+              <GoogleLoginButton
+                userType={UserRole.DOCENTE_ASIGNATURA}
+                label="Acceso Docente Asignatura"
+              />
+              <button
+                type="button"
+                style={{
+                  background: "transparent",
+                  color: "#1a355e",
+                  border: "none",
+                  textAlign: "left",
+                  marginTop: -8,
+                  marginBottom: 8,
+                  cursor: "pointer"
+                }}
+                onClick={() => setShowTeacherTypes(false)}
+              >
+                ← Volver
+              </button>
+            </>
+          )}
+          <GoogleLoginButton
+            userType={UserRole.ESTUDIANTE}
+            label="Acceso Estudiantes"
+          />
+        </div>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <hr style={{ flex: 1, border: "none", borderTop: "1px solid #ddd" }} />
+          <span style={{ margin: "0 12px", color: "#bbb" }}>o</span>
+          <hr style={{ flex: 1, border: "none", borderTop: "1px solid #ddd" }} />
+        </div>
+        <form onSubmit={handleAdminLogin} className="admin-login-form" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <input
+            type="email"
+            placeholder="Correo electrónico"
+            value={adminEmail}
+            onChange={e => setAdminEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={adminPassword}
+            onChange={e => setAdminPassword(e.target.value)}
+            required
+          />
+          <a href="#" style={{ color: "#e5735c", fontSize: 14, marginBottom: 8, textAlign: "left" }}>
+            ¿Olvidó su nombre de usuario o contraseña?
+          </a>
+          {adminError && <div className="error-message">{adminError}</div>}
+          <button type="submit" className="back-button" style={{ background: "#e5735c", color: "#fff" }}>
+            Acceder
+          </button>
+        </form>
       </div>
     </div>
   );
