@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export interface Ecoe{
     id: number;
-    semestre: number;
+    semester: number;
     description: string;
 }
 
