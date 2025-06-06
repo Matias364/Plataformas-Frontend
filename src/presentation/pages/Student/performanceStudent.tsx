@@ -15,7 +15,7 @@ const PerformanceStudent = () => {
         // Obtener info del estudiante
         const accessToken = localStorage.getItem('access_token');
         console.log('Access Token:', accessToken);
-        const resStudent = await fetch('http://localhost:3001/api/v1/students/me', {
+        const resStudent = await fetch('http://localhost:3001/api/v1/students/me/subjects', {
           headers: {
             Authorization: `Bearer ${accessToken?.replace(/"/g, '')}`,
           },
