@@ -4,6 +4,7 @@ import PerformanceStudent from './presentation/pages/Student/performanceStudent'
 import LoginPage from './presentation/pages/Login/LoginPage';
 import { AuthProvider } from './presentation/context/AuthContext';
 import ProtectedRoute from './presentation/components/ProtectedRoute';
+import TeacherEcoeMainPage from './presentation/pages/TeacherECOE/MainPageTeacherEcoe';
 
 function App() {
   return (
@@ -26,6 +27,12 @@ function App() {
                 <DashboardStudent />
               </ProtectedRoute>
             }
+          />
+          <Route
+          path='/docente-ecoe'
+          element={
+              <TeacherEcoeMainPage />
+          }
           />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
