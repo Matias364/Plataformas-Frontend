@@ -3,6 +3,7 @@ import { getAvailableEcoes, Ecoe } from "../../../infrastructure/services/EcoeSe
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import SidebarTeacherECOE from "./SidebarTeacherEcoe";
 import { borderRadius, fontWeight, minWidth } from "@mui/system";
+import ManageEcoe from "./ManageECOE";
 
 const semesterLabelColor = (semester: number) => {
     switch (semester){
@@ -19,6 +20,7 @@ const semesterLabelColor = (semester: number) => {
 
 const TeacherEcoeMainPage: React.FC = () => {
     const [ecoes, setEcoes] = useState<Ecoe[]>([]);
+    const [selectedEcoe, setSelectedEcoe] = useState<Ecoe | null>(null);
 
     useEffect(() => {
         getAvailableEcoes().then(setEcoes);
@@ -29,6 +31,19 @@ const TeacherEcoeMainPage: React.FC = () => {
         window.location.href = '/';
     };
 
+    if(selectedEcoe) {
+        return (
+            <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#fafbfc'}}>
+                <SidebarTeacherECOE name="Docente" role="Coordinador ECOE" onLogout={handleLogout} />
+                <Box sx={{flexGrow:1, p: {xs:1, sm:4}, ml: {xs:0, sm: '240px'}, width: '100%'}}>
+                    <ManageEcoe 
+                        ecoe={selectedEcoe} 
+                        onBack={() => setSelectedEcoe(null)}
+                    />
+                </Box>
+            </Box>
+        );
+    }
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#fafbfc'}}>
             <SidebarTeacherECOE name= "Docente" role="Coordinador ECOE" onLogout={handleLogout} />
@@ -59,7 +74,8 @@ const TeacherEcoeMainPage: React.FC = () => {
                                         {ecoe.description}
                                     </Typography>
                                     <Box sx={{ mt: 'auto'}}>
-                                        <Button variant="contained" color="success" sx={{ textTransform: 'none', alignSelf: 'flex-start', borderRadius: 2 }} disabled>
+                                        <Button variant="contained" color="success" sx={{ textTransform: 'none', alignSelf: 'flex-start', borderRadius: 2, bgcolor: '#009688' }}
+                                        onClick={() => setSelectedEcoe(ecoe)}>
                                         Gestionar
                                     </Button>
                                     </Box>
