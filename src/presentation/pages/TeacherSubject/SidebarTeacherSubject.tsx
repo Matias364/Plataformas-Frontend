@@ -98,16 +98,12 @@ const SidebarTeacherSubject: React.FC<SidebarTeacherSubjectProps> = ({ selected,
             bgcolor: "#e0e0e0",
             color: "#444",
             boxShadow: "none",
-            fontWeight: 600,
-            fontSize: 16,
-            justifyContent: collapsed ? "center" : "flex-start",
-            pl: collapsed ? 0 : 1.5,
             '&:hover': { bgcolor: "#d5d5d5" }
           }}
           onClick={onLogout}
           fullWidth
         >
-          {!collapsed && "Cerrar Sesion"}
+          {!collapsed && "Cerrar sesión"}
         </Button>
       </Box>
     </Drawer>

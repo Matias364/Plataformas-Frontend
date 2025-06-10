@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Box, Typography, Card, CardContent, Button, Divider, TextField, IconButton } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, TextField} from '@mui/material';
 import SidebarTeacherSubject from './SidebarTeacherSubject';
-import DownloadIcon from '@mui/icons-material/Download';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import StudentsTeacherSubject from './StudentsTeacherSubject';
+import RegisterGradesSubject from './RegisterGradesSubject';
+import LifeDocument from './LifeDocument';
+import ECOEStatistics from './ECOEStatistics';
 
 const mockCompetencias = [
   { nombre: "Valoracion y diagnostico", promedio: "Promedio actual" },
@@ -147,19 +150,24 @@ const TeacherSubjectDashboard = () => {
   const renderContent = () => {
     switch (selected) {
       case 0:
+        return <DashboardContent />;
+      case 1:
+        return <StudentsTeacherSubject />;
+      case 2:
+        return <RegisterGradesSubject/>;
+      case 3:
+        return <LifeDocument/>;
+      case 4:
+        return <ECOEStatistics/>;
+      // Puedes agregar más casos para otras secciones
       default:
+        
         return <DashboardContent />;
     }
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        minHeight: '100vh',
-        bgcolor: "#FAFAFA"
-      }}
-    >
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#FAFAFA" }}>
       <SidebarTeacherSubject
         selected={selected}
         onSelect={setSelected}
@@ -170,9 +178,9 @@ const TeacherSubjectDashboard = () => {
           flexGrow: 1,
           ml: { xs: 0, md: '240px' },
           width: '100%',
-          maxWidth: 1240, // o el valor que prefieras (ej: 1200, 1280)
-          mx: 'auto',     // centra el contenido
-          px: { xs: 1.5, md: 4 }, // padding horizontal responsivo
+          maxWidth: 1240,
+          mx: 'auto',
+          px: { xs: 1.5, md: 4 },
           transition: 'margin-left 0.3s',
         }}
       >
