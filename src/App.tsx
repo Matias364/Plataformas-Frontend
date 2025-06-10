@@ -5,6 +5,7 @@ import LoginPage from './presentation/pages/Login/LoginPage';
 import { AuthProvider } from './presentation/context/AuthContext';
 import ProtectedRoute from './presentation/components/ProtectedRoute';
 import TeacherEcoeMainPage from './presentation/pages/TeacherECOE/MainPageTeacherEcoe';
+import TeacherSubjectDashboard from './presentation/pages/TeacherSubject/TeacherSubjectDashboard';
 
 function App() {
   return (
@@ -32,6 +33,12 @@ function App() {
           path='/docente-ecoe'
           element={
               <TeacherEcoeMainPage />
+          }
+          />
+          <Route
+          path='/docente-asignatura'
+          element={
+              <TeacherSubjectDashboard />
           }
           />
           <Route path="*" element={<Navigate to="/" />} />
