@@ -14,20 +14,22 @@ function App() {
           <Route
           path='/docente-ecoe'
           element={
+            <ProtectedRoute allowedRoles={['docente_ecoe']}>
               <TeacherEcoeMainPage />
+            </ProtectedRoute>
           }
           />
           <Route
             path='/docente-asignatura'
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['docente_asignatura']}>
                 <TeacherSubjectDashboard />
               </ProtectedRoute>
             }
           />
           <Route
             element={
-              <ProtectedRoute >
+              <ProtectedRoute allowedRoles={['estudiante']}>
                 <StudentLayout />
               </ProtectedRoute>
             }
