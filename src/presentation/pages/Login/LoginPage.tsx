@@ -23,6 +23,7 @@ const LoginPage: React.FC = () => {
       // Redirige según el rol
       if (user.role === "estudiante") navigate("/perfil");
       if (user.role === "docente_ecoe") navigate("/docente-ecoe");
+      if (user.role === "docente_asignatura") navigate("/docente-asignatura");
       // Agrega más roles si es necesario
     }
   }, [user, navigate]);
