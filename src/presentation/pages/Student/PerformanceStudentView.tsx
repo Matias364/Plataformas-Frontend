@@ -47,13 +47,6 @@ const PerformanceStudentView: React.FC<Props> = ({
   filteredHistorial
 }) => (
   <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#ffffff' }}>
-    <SidebarStudent
-      name={userData?.rut}
-      picture={userData?.picture}
-      selected={selected}
-      onSelect={setSelected}
-      onLogout={handleLogout}
-    />
     <Box
       sx={{
         flexGrow: 1,
