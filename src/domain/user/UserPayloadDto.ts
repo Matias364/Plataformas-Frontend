@@ -1,6 +1,6 @@
 export interface UserPayloadDto {
-  id: String
-  email: String
-  role: String
+  id: string
+  email: string
+  role: string
   picture?: string
 }
