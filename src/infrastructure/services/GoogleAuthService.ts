@@ -23,10 +23,10 @@ export class GoogleAuthService implements IAuthService {
       // Aquí, si la respuesta es exitosa, guardamos los tokens y los datos del usuario en localStorage
       if (response.status === 200) {
         //const { accessToken, refreshToken, user, expiresIn } = response.data; // Suponiendo que el backend te devuelve estos valores
-        const { accessToken} = response.data;
+        const { user, accessToken} = response.data;
       
         console.log("Acceso exitoso con token: ", accessToken);
-        saveUserData("",accessToken,"",10); 
+        saveUserData(user, accessToken,"",10); 
         // Guardamos el accessToken en localStorage
         // Suponiendo que el backend te devuelve estos valores
         // Guardamos en localStorage usando las funciones de storage
