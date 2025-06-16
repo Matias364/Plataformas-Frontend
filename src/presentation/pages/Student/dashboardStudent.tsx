@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import SidebarStudent from './SidebarStudent';
 import { Box, Typography, Paper, Select, MenuItem, IconButton } from '@mui/material';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
@@ -24,31 +23,8 @@ const DashboardStudent = () => {
     }
   }
 
-  function getEmailFromToken(token: string | null): string | null {
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.email || null;
-    } catch {
-      return null;
-    }
-  }
-
-  function getNameFromEmail(email: string | null): string {
-    if (!email) return '';
-    const [user] = email.split('@');
-    const [nombre, apellidoRaw] = user.split('.');
-    if (nombre && apellidoRaw) {
-      const apellido = apellidoRaw.replace(/\d+$/, '');
-      return `${nombre.charAt(0).toUpperCase() + nombre.slice(1)} ${apellido.charAt(0).toUpperCase() + apellido.slice(1)}`;
-    }
-    return email;
-  }
-
   // Obtener accessToken y correo
   const { accessToken } = getUserData();
-  const studentEmail = getEmailFromToken(accessToken);
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -89,11 +65,6 @@ const DashboardStudent = () => {
     // eslint-disable-next-line
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = '/';
-  };
-
   const handleScroll = (dir: number) => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({ left: dir * 300, behavior: 'smooth' });
@@ -132,14 +103,6 @@ const DashboardStudent = () => {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative', backgroundColor: '#ffffff' }}>
-      <SidebarStudent
-        name={getNameFromEmail(studentEmail)}
-        picture="https://randomuser.me/api/portraits/men/32.jpg"
-        selected={selected}
-        onSelect={setSelected}
-        onLogout={handleLogout}
-      />
-
       <Box
         sx={{
           flexGrow: 1,
@@ -305,7 +268,7 @@ const DashboardStudent = () => {
                     })()
                   }}
                 >
-                  {promedio !== null ? promedio : '--'}
+                  {promedio !== null ? promedio.toFixed(1) : '--'}
                 </Box>
                 <Typography sx={{ fontSize: 15, color: '#5C5C5C', fontWeight: 500 }}>
                   {promedio !== null ? 'Nota final del ECOE' : 'Sin promedio'}
