@@ -1,13 +1,23 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import NotFoundPage from "../pages/NotFoundPage/NotFoundPage";
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  allowedRoles?: string[];
+}
+
+const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const {user} = useAuth();
 
   if (user === null) {
-    // Puedes mostrar un loader aquí si lo deseas
     return <div>Cargando...</div>;
+  }
+
+  // Si hay roles permitidos y el usuario no tiene el rol, muestra 404
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <NotFoundPage />;
   }
 
   return user ? <>{children}</> : <Navigate to="/" />;
