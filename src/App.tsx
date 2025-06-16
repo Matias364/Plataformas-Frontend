@@ -5,6 +5,7 @@ import LoginPage from './presentation/pages/Login/LoginPage';
 import ProtectedRoute from './presentation/components/ProtectedRoute';
 import TeacherEcoeMainPage from './presentation/pages/TeacherECOE/MainPageTeacherEcoe';
 import StudentLayout from './presentation/pages/Student/StudentLayout';
+import TeacherSubjectDashboard from './presentation/pages/TeacherSubject/TeacherSubjectDashboard';
 
 function App() {
   return (
