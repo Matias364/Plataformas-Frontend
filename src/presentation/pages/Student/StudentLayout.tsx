@@ -1,7 +1,8 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import SidebarStudent from './SidebarStudent';
 import { getUserData } from '../../../storage/storage';
-import { getEmailFromToken, getNameFromEmail } from '../../../utils/authUtils';
+import { getEmailFromToken, getNameFromEmail } from '../../../utils/userUtils';
+import { logout } from '../../../utils/logout';
 
 const StudentLayout = () => {
   // Obtén los datos del usuario y la foto aquí
@@ -15,11 +16,6 @@ const StudentLayout = () => {
   const location = useLocation();
   const selected = location.pathname === '/rendimiento' ? 'rendimiento' : 'perfil';
 
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = '/';
-  };
-
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#ffffff' }}>
       <SidebarStudent
@@ -27,7 +23,7 @@ const StudentLayout = () => {
         picture={studentPicture}
         selected={selected}
         onSelect={() => {}}
-        onLogout={handleLogout}
+        onLogout={logout}
       />
       <div style={{ flexGrow: 1 }}>
         <Outlet />

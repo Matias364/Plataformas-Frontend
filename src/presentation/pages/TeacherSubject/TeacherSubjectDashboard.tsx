@@ -6,6 +6,7 @@ import StudentsTeacherSubject from './StudentsTeacherSubject';
 import RegisterGradesSubject from './RegisterGradesSubject';
 import LifeDocument from './LifeDocument';
 import ECOEStatistics from './ECOEStatistics';
+import { logout } from '../../../utils/logout';
 
 const mockCompetencias = [
   { nombre: "Valoracion y diagnostico", promedio: "Promedio actual" },
@@ -171,7 +172,7 @@ const TeacherSubjectDashboard = () => {
       <SidebarTeacherSubject
         selected={selected}
         onSelect={setSelected}
-        onLogout={() => alert('Cerrar sesión')}
+        onLogout={logout}
       />
       <Box
         sx={{

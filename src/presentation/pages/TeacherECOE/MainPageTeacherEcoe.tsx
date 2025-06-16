@@ -2,8 +2,8 @@ import React, {useEffect, useState} from "react";
 import { getAvailableEcoes, Ecoe } from "../../../infrastructure/services/EcoeService";
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import SidebarTeacherECOE from "./SidebarTeacherEcoe";
-import { borderRadius, fontWeight, minWidth } from "@mui/system";
 import ManageEcoe from "./ManageECOE";
+import { logout } from "../../../utils/logout";
 
 const semesterLabelColor = (semester: number) => {
     switch (semester){
@@ -26,15 +26,10 @@ const TeacherEcoeMainPage: React.FC = () => {
         getAvailableEcoes().then(setEcoes);
     }, []);
 
-    const handleLogout = () => {
-        localStorage.clear();
-        window.location.href = '/';
-    };
-
     if(selectedEcoe) {
         return (
             <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#fafbfc'}}>
-                <SidebarTeacherECOE name="Docente" role="Coordinador ECOE" onLogout={handleLogout} />
+                <SidebarTeacherECOE name="Docente" role="Coordinador ECOE" onLogout={logout} />
                 <Box sx={{flexGrow:1, p: {xs:1, sm:4}, ml: {xs:0, sm: '240px'}, width: '100%'}}>
                     <ManageEcoe 
                         ecoe={selectedEcoe} 
@@ -46,7 +41,7 @@ const TeacherEcoeMainPage: React.FC = () => {
     }
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#fafbfc'}}>
-            <SidebarTeacherECOE name= "Docente" role="Coordinador ECOE" onLogout={handleLogout} />
+            <SidebarTeacherECOE name= "Docente" role="Coordinador ECOE" onLogout={logout} />
             <Box sx={{flexGrow: 1, p: {xs: 1, sm: 4}, ml: {xs:0, sm: '240px'}, with: '100%'}}>
                 <Box sx={{maxWidth: '1400px', mx: 'auto', width: '100%'}}>
                     <Typography variant="h4" color='#000000' fontWeight={700} sx={{ mt: 2, mb: 1 }}>

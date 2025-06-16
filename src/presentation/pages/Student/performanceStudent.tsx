@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import PerformanceStudentView from './PerformanceStudentView';
 
 const PerformanceStudent = () => {
-  const [selected, setSelected] = useState('rendimiento');
   const [search, setSearch] = useState('');
-  const [userData, setUserData] = useState<any>(null);
   const [asignaturas, setAsignaturas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +22,6 @@ const PerformanceStudent = () => {
           throw new Error('No se pudo obtener la información del estudiante');
         }
         const student = await resStudent.json();
-        setUserData(student);
 
         // Obtener info de cada asignatura y sus competencias
         const asignaturasData = await Promise.all(
@@ -67,11 +64,6 @@ const PerformanceStudent = () => {
     fetchData();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = '/';
-  };
-
   const filteredHistorial = asignaturas.filter(
     (item) =>
       item.nombre?.toLowerCase().includes(search.toLowerCase()) ||
@@ -96,10 +88,6 @@ const PerformanceStudent = () => {
 
   return (
     <PerformanceStudentView
-      userData={userData}
-      selected={selected}
-      setSelected={setSelected}
-      handleLogout={handleLogout}
       search={search}
       setSearch={setSearch}
       asignaturas={asignaturas}

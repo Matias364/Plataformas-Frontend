@@ -1,5 +1,4 @@
 import React from 'react';
-import SidebarStudent from './SidebarStudent';
 import {
   Box, Typography, Paper, Select, MenuItem, Chip, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, InputBase, Stack, Divider, IconButton
@@ -18,10 +17,6 @@ const nivelColor = (nivel: string) => {
 };
 
 interface Props {
-  userData: any;
-  selected: string;
-  setSelected: (val: string) => void;
-  handleLogout: () => void;
   search: string;
   setSearch: (val: string) => void;
   asignaturas: any[];
@@ -33,10 +28,6 @@ interface Props {
 }
 
 const PerformanceStudentView: React.FC<Props> = ({
-  userData,
-  selected,
-  setSelected,
-  handleLogout,
   search,
   setSearch,
   asignaturas,

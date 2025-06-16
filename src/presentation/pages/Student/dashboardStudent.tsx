@@ -5,7 +5,6 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { getUserData } from '../../../storage/storage';
 
 const DashboardStudent = () => {
-  const [selected, setSelected] = useState('perfil');
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Estado para competencias reales y promedio
@@ -113,7 +112,7 @@ const DashboardStudent = () => {
           height: "100%"
         }}
       >
-        {selected === 'perfil' && (
+      
           <Box>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
               <Typography variant="h4" color='#000000' fontWeight={700}>Mi Perfil ECOE </Typography>
@@ -276,13 +275,6 @@ const DashboardStudent = () => {
               </Paper>
             </Box>
           </Box>
-        )}
-
-        {selected === 'rendimiento' && (
-          <Box>
-            <Typography variant="h4" color='#000000' fontWeight={700}>Rendimiento</Typography>
-          </Box>
-        )}
       </Box>
     </Box>
   );
