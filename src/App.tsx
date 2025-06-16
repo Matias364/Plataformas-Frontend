@@ -18,6 +18,14 @@ function App() {
           }
           />
           <Route
+            path='/docente-asignatura'
+            element={
+              <ProtectedRoute>
+                <TeacherSubjectDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             element={
               <ProtectedRoute >
                 <StudentLayout />
