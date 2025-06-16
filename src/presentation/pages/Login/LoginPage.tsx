@@ -61,6 +61,7 @@ const LoginPage: React.FC = () => {
         <h2 style={{ textAlign: "center"}}>Acceder</h2>
         <div className="login-buttons" style={{ gap: 12, display: "flex", flexDirection: "column" }}>
           {!showTeacherTypes ? (
+          <>
             <button
               type="button"
               className="back-button"
@@ -82,7 +83,12 @@ const LoginPage: React.FC = () => {
               <img src="/src/presentation/assets/google icon.png" alt="Google" style={{ width: 18, height: 18, marginRight: 10 }} />
               Acceso Docente
             </button>
-          ) : (
+            <GoogleLoginButton
+            userType={UserRole.ESTUDIANTE}
+            label="Acceso Estudiantes"
+            />
+          </>
+        ) : (
             <>
               <GoogleLoginButton
                 userType={UserRole.DOCENTE_ECOE}
@@ -109,10 +115,6 @@ const LoginPage: React.FC = () => {
               </button>
             </>
           )}
-          <GoogleLoginButton
-            userType={UserRole.ESTUDIANTE}
-            label="Acceso Estudiantes"
-          />
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
           <hr style={{ flex: 1, border: "none", borderTop: "1px solid #ddd" }} />
