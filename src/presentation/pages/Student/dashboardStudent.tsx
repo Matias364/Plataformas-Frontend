@@ -105,10 +105,10 @@ const DashboardStudent = () => {
       <Box
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
+          p: { xs: 0, sm: 3 },
           overflowY: 'auto',
           ml: { xs: 0, sm: '240px' },
-          width: 'calc(100vw - 240px)',
+          width: 'calc(100vw - 480px)',
           height: "100%"
         }}
       >
