@@ -1,3 +1,4 @@
+/*
 import React, {useEffect, useState} from "react";
 import { getAvailableEcoes, Ecoe } from "../../../infrastructure/services/EcoeService";
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
@@ -84,4 +85,4 @@ const TeacherEcoeMainPage: React.FC = () => {
     )
 }
 
-export default TeacherEcoeMainPage;
+export default TeacherEcoeMainPage;*/
