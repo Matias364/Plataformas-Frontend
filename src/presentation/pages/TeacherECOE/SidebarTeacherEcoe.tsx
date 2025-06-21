@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { Drawer, Box, Avatar, Typography, List, ListItemButton, ListItemIcon, ListItemText, Button, IconButton, useMediaQuery } from '@mui/material';
+import {
+  Drawer, Box, Avatar, Typography, List, ListItemButton, ListItemIcon,
+  ListItemText, Button, IconButton, useMediaQuery
+} from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface SidebarTeacherProps {
   name: string;
@@ -20,6 +24,10 @@ const SidebarTeacherECOE: React.FC<SidebarTeacherProps> = ({ name, role, onLogou
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isEcoeSelected = location.pathname.startsWith("/docente-ecoe/ecoes");
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -34,14 +42,19 @@ const SidebarTeacherECOE: React.FC<SidebarTeacherProps> = ({ name, role, onLogou
           </>
         )}
       </Box>
+
       <List sx={{ mt: 4 }}>
-        <ListItemButton selected>
+        <ListItemButton
+          selected={isEcoeSelected}
+          onClick={() => navigate('/docente-ecoe/ecoes')}
+        >
           <ListItemIcon>
             <HomeIcon color="primary" />
           </ListItemIcon>
           {!collapsed && <ListItemText primary="Gestionar ECOE" />}
         </ListItemButton>
       </List>
+
       <Box sx={{ flexGrow: 1 }} />
       <Box sx={{ p: 2 }}>
         <Button
@@ -97,7 +110,7 @@ const SidebarTeacherECOE: React.FC<SidebarTeacherProps> = ({ name, role, onLogou
     );
   }
 
-  // Desktop drawer (expand/collapse)
+  // Desktop drawer
   return (
     <Drawer
       variant="permanent"
