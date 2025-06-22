@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Box, Typography, Paper, Select, MenuItem, IconButton } from '@mui/material';
+import { Box, Typography, Paper, Select, MenuItem, IconButton, Skeleton } from '@mui/material';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { getUserData } from '../../../storage/storage';
+import { EcoeYear } from '../../../domain/ecoe/EcoeYear';
+import { GetStudentEcoeDataUseCase } from '../../../application/ecoe/GetStudentEcoeDataUseCase';
 
 const DashboardStudent = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -11,6 +13,10 @@ const DashboardStudent = () => {
   const [competencias, setCompetencias] = useState<{ nombre: string, calificacion: number, nivel: string }[]>([]);
   const [promedio, setPromedio] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [minLoading, setMinLoading] = useState(true);
+
+  const [ecoeYears, setEcoeYears] = useState<EcoeYear[]>([]);
+  const [selectedEcoe, setSelectedEcoe] = useState<EcoeYear | null>(null);
 
   function getUserIdFromToken(token: string | null): string | null {
     if (!token) return null;
@@ -22,38 +28,62 @@ const DashboardStudent = () => {
     }
   }
 
-  // Obtener accessToken y correo
+  // Obtener datos del usuario
   const { accessToken } = getUserData();
+  const ecoeUseCase = new GetStudentEcoeDataUseCase();
+
+  // Obtener los años de ECOE disponibles
   useEffect(() => {
+    const fetchEcoeYears = async () => {
+      try {
+        const userId = getUserIdFromToken(accessToken);
+        if (!userId) throw new Error('No se pudo obtener el usuario');
+        const data = await ecoeUseCase.getYears(userId);
+        setEcoeYears(data);
+        
+        //Se selecciona el año actual si existe, sino el último disponible
+        const currentYear = new Date().getFullYear();
+        const currentSemester = new Date().getMonth() < 7 ? '1' : '2';
+        const currentYearSemester = `${currentYear}-${currentSemester}`;
+        let found = data.find(e => e.yearSemester === currentYearSemester);
+        if (!found && data.length > 0) {
+          found = data[data.length -1];
+        }
+        setSelectedEcoe(found || null);
+      } catch (e) {
+        console.error('Error fetching ECOE years:', e);
+        setEcoeYears([]);
+        setSelectedEcoe(null);
+      }
+      setLoading(false);
+    };
+    fetchEcoeYears();
+  }, []);
+
+  // Obtener competencias y promedio del ECOE seleccionado
+  useEffect(() => {
+    setLoading(true);
+    setMinLoading(true);
+    const timer = setTimeout(() => setMinLoading(false), 385); // Mínimo 0.385 segundo de carga
     const fetchData = async () => {
+      if (!selectedEcoe) return;
       setLoading(true);
       try {
         const userId = getUserIdFromToken(accessToken);
-        const ecoeYear = "2025";
-
         if (!userId) throw new Error('No se pudo obtener el usuario');
         // Fetch competencias
-        const url = `http://localhost:3001/api/v1/students/${userId}/ecoe/${ecoeYear}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('No se pudo obtener los datos de ECOE');
-        const data = await res.json();
+        const data = await ecoeUseCase.getCompetencies(userId, selectedEcoe.ecoeId);
 
         const competenciasMapped = (data.competenciesEvaluated || []).map((c: any) => ({
-          nombre: c.competency?.name || 'Competencia',
+          nombre: c.competencyName || 'Competencia',
           calificacion: c.grade,
           nivel: c.achievementLevel?.toUpperCase() || '',
         }));
         setCompetencias(competenciasMapped);
 
         // Fetch promedio
-        const avgUrl = `http://localhost:3001/api/v1/students/${userId}/ecoe/${ecoeYear}/avg`;
-        const resAvg = await fetch(avgUrl);
-        if (resAvg.ok) {
-          const dataAvg = await resAvg.json();
-          setPromedio(dataAvg.average ?? null);
-        } else {
-          setPromedio(null);
-        }
+        const dataAvg = await ecoeUseCase.getAvg(userId, selectedEcoe.ecoeId);
+        setPromedio(dataAvg.average ?? null);
       } catch (e) {
         setCompetencias([]);
         setPromedio(null);
@@ -61,8 +91,9 @@ const DashboardStudent = () => {
       setLoading(false);
     };
     fetchData();
+    return () => clearTimeout(timer); // Limpiar el timeout al desmontar
     // eslint-disable-next-line
-  }, []);
+  }, [selectedEcoe]);
 
   const handleScroll = (dir: number) => {
     if (scrollContainerRef.current) {
@@ -116,8 +147,20 @@ const DashboardStudent = () => {
           <Box>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
               <Typography variant="h4" color='#000000' fontWeight={700}>Mi Perfil ECOE </Typography>
-              <Select value="ECOE 2025" size="small" sx={{ minWidth: 140 }}>
-                <MenuItem value="ECOE 2025">ECOE 2025</MenuItem>
+              <Select
+               value={selectedEcoe?.yearSemester || ''} 
+               size="small" 
+               sx={{ minWidth: 140 }}
+               onChange={(e) => {
+                const ecoe = ecoeYears.find(y => y.yearSemester === e.target.value);
+                setSelectedEcoe(ecoe || null);
+                }}
+                disabled= {loading || ecoeYears.length === 0}
+              >
+                {ecoeYears.map((y) => (
+                  <MenuItem key={y.yearSemester} value={y.yearSemester}>
+                    {y.yearSemester}
+                  </MenuItem>))}
               </Select>
             </Box>
 
@@ -138,8 +181,25 @@ const DashboardStudent = () => {
                   '&::-webkit-scrollbar': { display: 'none' }
                 }}
               >
-                {loading ? (
-                  <Typography sx={{ m: 2 }}>Cargando...</Typography>
+                {loading || minLoading ?(
+                  Array.from({ length: 4 }).map((_, idx) => (
+                    <Paper
+                      key={idx}
+                      sx={{
+                        p: 3,
+                        borderRadius: 3,
+                        bgcolor: '#FBFBFB',
+                        textAlign: 'center',
+                        flexShrink: 0,
+                        width: { xs: 280, md: 320 },
+                        mr: 2
+                      }}
+                    >
+                      <Skeleton variant="text" width={120} height={32} sx={{ mx: 'auto',mb: 2 }} />
+                      <Skeleton variant="rectangular" width={64} height={64} sx={{ mx: 'auto', mb: 2, borderRadius: '50%' }} />
+                      <Skeleton variant="text" width={80} height={24} sx={{ mx: 'auto' }} />
+                    </Paper>
+                  ))
                 ) : (
                   competencias.map((c, idx) => {
                     const colors = getCompetencyColors(c.nivel);
@@ -210,7 +270,7 @@ const DashboardStudent = () => {
               color="#5C5C5C"
               sx={{ mb: 2, textAlign: 'center' }}
             >
-              Promedio ECOE 2025
+              Promedio ECOE {selectedEcoe?.yearSemester || ''}
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
               <Paper
@@ -229,6 +289,9 @@ const DashboardStudent = () => {
                 }}
               >
                 <Typography fontWeight={600} sx={{ mb: 1 }}>Promedio</Typography>
+                {loading || minLoading ? (
+                  <Skeleton variant='circular' width={100} height={100} sx={{ mx: 'auto', mb: 2 }} />
+                ) : (
                 <Box
                   sx={{
                     bgcolor: (() => {
@@ -269,6 +332,7 @@ const DashboardStudent = () => {
                 >
                   {promedio !== null ? promedio.toFixed(1) : '--'}
                 </Box>
+                )}
                 <Typography sx={{ fontSize: 15, color: '#5C5C5C', fontWeight: 500 }}>
                   {promedio !== null ? 'Nota final del ECOE' : 'Sin promedio'}
                 </Typography>
