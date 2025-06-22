@@ -1,6 +1,7 @@
 /*
 import React, {useEffect, useState} from "react";
-import { getAvailableEcoes, Ecoe } from "../../../infrastructure/services/EcoeService";
+import { Ecoe } from "../../../domain/ecoe/Ecoe";
+import { getAvailableEcoes } from "../../../infrastructure/services/EcoeService";
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import SidebarTeacherECOE from "./SidebarTeacherEcoe";
 import ManageEcoe from "./ManageECOE";
