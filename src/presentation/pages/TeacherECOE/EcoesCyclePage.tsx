@@ -12,7 +12,8 @@ import {
     Skeleton,
     CircularProgress,
 } from "@mui/material";
-import { getAvailableEcoes, fetchStudentsByEcoeId, Ecoe, Student } from "../../../infrastructure/services/EcoeService";
+import { getAvailableEcoes, fetchStudentsByEcoeId, Student } from "../../../infrastructure/services/EcoeService";
+import { Ecoe } from "../../../domain/ecoe/Ecoe";
 
 export const semesterLabelColor = (semester: number) => {
     switch (semester) {
