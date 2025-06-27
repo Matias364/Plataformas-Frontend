@@ -23,7 +23,6 @@ interface Props {
   loading: boolean;
   competenciasGrafico: any[];
   competenciasConteo: Record<string, number>;
-  totalAsignaturas: number;
   filteredHistorial: any[];
   competenciasTotales: Record<string, number>; // NUEVO
 }
@@ -35,7 +34,6 @@ const PerformanceStudentView: React.FC<Props> = ({
   loading,
   competenciasGrafico,
   competenciasConteo,
-  totalAsignaturas,
   filteredHistorial,
   competenciasTotales // NUEVO
 }) => (
