@@ -201,62 +201,69 @@ const DashboardStudent = () => {
                     </Paper>
                   ))
                 ) : (
-                  competencias.map((c, idx) => {
-                    const colors = getCompetencyColors(c.nivel);
-                    return (
-                      <Paper
-                        key={idx}
-                        sx={{
-                          p: 3,
-                          borderRadius: 3,
-                          bgcolor: '#FBFBFB',
-                          textAlign: 'center',
-                          flexShrink: 0,
-                          width: { xs: 280, md: 320 },
-                          // Quitar el borde de color
-                          
-                        }}
-                      >
-                        <Typography fontWeight={600}>{c.nombre}</Typography>
-                        <Box sx={{ mt: 1, mb: 1 }}>
-                          <Typography
-                            component="span"
-                            sx={{
-                              bgcolor: colors.bg,
-                              borderRadius: 1,
-                              px: 1.5,
-                              fontSize: 14,
-                              color: colors.text,
-                              fontWeight: 700
-                            }}
-                          >
-                            Nivel: {c.nivel}
-                          </Typography>
-                        </Box>
-                        <Typography fontWeight={500} sx={{ mb: 1 }}>Calificación</Typography>
-                        <Box
+                  competencias.length === 0 ? (
+                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
+                      <Typography sx={{ color: '#888', fontStyle: 'italic', textAlign: 'center' }}>
+                        No hay competencias evaluadas en este ECOE.
+                      </Typography>
+                    </Box>
+                  ) : (
+                    competencias.map((c, idx) => {
+                      const colors = getCompetencyColors(c.nivel);
+                      return (
+                        <Paper
+                          key={idx}
                           sx={{
-                            bgcolor: colors.bg,
-                            color: colors.text,
-                            fontSize: 32,
-                            fontWeight: 700,
-                            borderRadius: '50%',
-                            width: 64,
-                            height: 64,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            mx: 'auto',
-                            mb: 1,
-                            // Mantén solo el borde del círculo, no del Paper
-                            border: `2.5px solid ${colors.border}`
+                            p: 3,
+                            borderRadius: 3,
+                            bgcolor: '#FBFBFB',
+                            textAlign: 'center',
+                            flexShrink: 0,
+                            width: { xs: 280, md: 320 },
+                            // Quitar el borde de color
                           }}
                         >
-                          {c.calificacion}
-                        </Box>
-                      </Paper>
-                    );
-                  })
+                          <Typography fontWeight={600}>{c.nombre}</Typography>
+                          <Box sx={{ mt: 1, mb: 1 }}>
+                            <Typography
+                              component="span"
+                              sx={{
+                                bgcolor: colors.bg,
+                                borderRadius: 1,
+                                px: 1.5,
+                                fontSize: 14,
+                                color: colors.text,
+                                fontWeight: 700
+                              }}
+                            >
+                              Nivel: {c.nivel}
+                            </Typography>
+                          </Box>
+                          <Typography fontWeight={500} sx={{ mb: 1 }}>Calificación</Typography>
+                          <Box
+                            sx={{
+                              bgcolor: colors.bg,
+                              color: colors.text,
+                              fontSize: 32,
+                              fontWeight: 700,
+                              borderRadius: '50%',
+                              width: 64,
+                              height: 64,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mx: 'auto',
+                              mb: 1,
+                              // Mantén solo el borde del círculo, no del Paper
+                              border: `2.5px solid ${colors.border}`
+                            }}
+                          >
+                            {c.calificacion}
+                          </Box>
+                        </Paper>
+                      );
+                    })
+                  )
                 )}
               </Box>
               <IconButton onClick={() => handleScroll(1)} sx={{ position: 'absolute', right: -20, top: '50%', transform: 'translateY(-50%)', zIndex: 2, bgcolor: 'white' }}>
@@ -292,46 +299,45 @@ const DashboardStudent = () => {
                 {loading || minLoading ? (
                   <Skeleton variant='circular' width={100} height={100} sx={{ mx: 'auto', mb: 2 }} />
                 ) : (
-                <Box
-                  sx={{
-                    bgcolor: (() => {
-                      if (promedio !== null) {
-                        if (promedio >= 5) return '#d1f2eb'; // verde suave
-                        if (promedio >= 4) return '#fcf3cf'; // amarillo suave
-                        return '#f9ebea'; // rojo suave
-                      }
-                      return '#e5e8e8'; // gris suave
-                    })(),
-                    color: (() => {
-                      if (promedio !== null) {
-                        if (promedio >= 5) return '#229954';
-                        if (promedio >= 4) return '#b7950b';
-                        return '#922b21';
-                      }
-                      return '#626567';
-                    })(),
-                    fontSize: 32,
-                    fontWeight: 700,
-                    borderRadius: '50%',
-                    width: 100,
-                    height: 100,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 1,
-                    border: (() => {
-                      if (promedio !== null) {
-                        if (promedio >= 5) return '2.5px solid #27ae60';
-                        if (promedio >= 4) return '2.5px solid #f1c40f';
-                        return '2.5px solid #e74c3c';
-                      }
-                      return '2.5px solid #b2babb';
-                    })()
-                  }}
-                >
-                  {promedio !== null ? promedio.toFixed(1) : '--'}
-                </Box>
+                  promedio !== null ? (
+                    <Box
+                      sx={{
+                        bgcolor: (() => {
+                          if (promedio >= 5) return '#d1f2eb'; // verde suave
+                          if (promedio >= 4) return '#fcf3cf'; // amarillo suave
+                          return '#f9ebea'; // rojo suave
+                        })(),
+                        color: (() => {
+                          if (promedio >= 5) return '#229954';
+                          if (promedio >= 4) return '#b7950b';
+                          return '#922b21';
+                        })(),
+                        fontSize: 32,
+                        fontWeight: 700,
+                        borderRadius: '50%',
+                        width: 100,
+                        height: 100,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 1,
+                        border: (() => {
+                          if (promedio >= 5) return '2.5px solid #27ae60';
+                          if (promedio >= 4) return '2.5px solid #f1c40f';
+                          return '2.5px solid #e74c3c';
+                        })()
+                      }}
+                    >
+                      {promedio.toFixed(1)}
+                    </Box>
+                  ) : (
+                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+                      <Typography sx={{ color: '#888', fontStyle: 'italic', textAlign: 'center' }}>
+                        Promedio no disponible para este ECOE.
+                      </Typography>
+                    </Box>
+                  )
                 )}
                 <Typography sx={{ fontSize: 15, color: '#5C5C5C', fontWeight: 500 }}>
                   {promedio !== null ? 'Nota final del ECOE' : 'Sin promedio'}
