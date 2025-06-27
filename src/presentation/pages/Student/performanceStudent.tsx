@@ -111,8 +111,7 @@ const PerformanceStudent = () => {
     });
   });
 
-  // Generar arreglo para el gráfico con todas las competencias encontradas
-  const totalAsignaturas = asignaturas.length;
+  // Generar arreglo para el gráfico con todas las competencias encontradas;
   const competenciasGrafico = Object.values(competenciasConteo).map(({ name, count, id }) => {
     console.log('Competencia:', name, 'ID:', id, 'Count:', count);
     console.log('Total competencias:', competenciasTotales);
@@ -136,7 +135,6 @@ const PerformanceStudent = () => {
       loading={loading}
       competenciasGrafico={competenciasGrafico}
       competenciasConteo={Object.fromEntries(Object.entries(competenciasConteo).map(([k, v]) => [k, v.count]))}
-      totalAsignaturas={totalAsignaturas}
       filteredHistorial={filteredHistorial}
       competenciasTotales={competenciasTotales}
     />
