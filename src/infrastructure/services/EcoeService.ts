@@ -47,3 +47,5 @@ export const getStudentEcoeAvg = async (userId: string, ecoeId: number) => {
     const response = await axios.get(`http://localhost:3001/api/v1/students/${userId}/ecoe/${ecoeId}/avg`);
     return response.data;
 };
+
+;
