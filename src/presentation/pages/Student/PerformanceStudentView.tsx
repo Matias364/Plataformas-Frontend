@@ -25,6 +25,7 @@ interface Props {
   competenciasConteo: Record<string, number>;
   totalAsignaturas: number;
   filteredHistorial: any[];
+  competenciasTotales: Record<string, number>; // NUEVO
 }
 
 const PerformanceStudentView: React.FC<Props> = ({
@@ -35,7 +36,8 @@ const PerformanceStudentView: React.FC<Props> = ({
   competenciasGrafico,
   competenciasConteo,
   totalAsignaturas,
-  filteredHistorial
+  filteredHistorial,
+  competenciasTotales // NUEVO
 }) => (
   <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#ffffff' }}>
     <Box
@@ -95,10 +97,10 @@ const PerformanceStudentView: React.FC<Props> = ({
                               Competencias ECOE desarrolladas en esta asignatura:
                             </Typography>
                             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                              {asig.competencias.map((comp: string) => (
+                              {asig.competencias.map((comp: any) => (
                                 <Chip
-                                  key={comp}
-                                  label={comp}
+                                  key={typeof comp === 'string' ? comp : comp.id}
+                                  label={typeof comp === 'string' ? comp : comp.name}
                                   size="small"
                                   sx={{ bgcolor: 'rgba(25, 118, 210, 0.08)', color: '#1976d2', fontWeight: 600 }}
                                 />
@@ -161,12 +163,12 @@ const PerformanceStudentView: React.FC<Props> = ({
             </Typography>
             {competenciasGrafico.map((comp) => (
               <Typography
-                key={comp.name}
+                key={comp.id}
                 variant="caption"
                 color="text.secondary"
                 sx={{ display: 'block' }}
               >
-                {comp.name}: {comp.value}% ({competenciasConteo[comp.name]} de {totalAsignaturas})
+                {comp.name}: {comp.value}% ({competenciasConteo[comp.id]} de {competenciasTotales[comp.id]})<br />
               </Typography>
             ))}
           </Paper>
@@ -230,16 +232,20 @@ const PerformanceStudentView: React.FC<Props> = ({
                       </Stack>
                     </TableCell>
                     <TableCell>
-                      <Stack direction="row" spacing={1}>
-                        {(item.competencias || []).map((comp: string) => (
-                          <Chip
-                            key={comp}
-                            label={comp}
-                            size="small"
-                            sx={{ bgcolor: 'rgba(25, 118, 210, 0.08)', color: '#1976d2', fontWeight: 600 }}
-                          />
+                      <Box sx={{ maxWidth: 260, pr: 1 }}>
+                        {Array.from({ length: Math.ceil((item.competencias || []).length / 2) }).map((_, rowIdx) => (
+                          <Stack direction="row" spacing={1} key={rowIdx} sx={{ mb: 0.5 }}>
+                            {(item.competencias || []).slice(rowIdx * 2, rowIdx * 2 + 2).map((comp: any) => (
+                              <Chip
+                                key={typeof comp === 'string' ? comp + rowIdx : comp.id + rowIdx}
+                                label={typeof comp === 'string' ? comp : comp.name}
+                                size="small"
+                                sx={{ bgcolor: 'rgba(25, 118, 210, 0.08)', color: '#1976d2', fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                              />
+                            ))}
+                          </Stack>
                         ))}
-                      </Stack>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
