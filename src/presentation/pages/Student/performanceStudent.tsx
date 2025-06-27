@@ -5,6 +5,7 @@ const PerformanceStudent = () => {
   const [search, setSearch] = useState('');
   const [asignaturas, setAsignaturas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [competenciasTotales, setCompetenciasTotales] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,7 +24,7 @@ const PerformanceStudent = () => {
         }
         const student = await resStudent.json();
 
-        // Obtener info de cada asignatura y sus competencias
+        // Obtener info de cada asignatura y sus competencias (incluyendo id de competencia)
         const asignaturasData = await Promise.all(
           (student.subjects || []).map(async (subj: any) => {
             // Obtener datos de la asignatura
@@ -31,12 +32,16 @@ const PerformanceStudent = () => {
             const asigInfo = await resAsig.json();
 
             // Obtener competencias de la asignatura
-            let competencias: string[] = [];
+            let competencias: { id: string, name: string }[] = [];
             try {
               const resCompetencias = await fetch(`http://localhost:3001/api/v1/students/subjects/${subj.subjectId}/competencies`);
               if (resCompetencias.ok) {
+                console.log('Competencias response:', resCompetencias);
                 const competenciasData = await resCompetencias.json();
-                competencias = (competenciasData || []).map((comp: any) => comp.competency.name || comp.competency.nombre);
+                competencias = (competenciasData || []).map((comp: any) => ({
+                  id: comp.competency.id || comp.competency._id,
+                  name: comp.competency.name || comp.competency.nombre
+                }));
               }
             } catch (err) {
               competencias = [];
@@ -50,14 +55,39 @@ const PerformanceStudent = () => {
               nombre: asigInfo.name,
               calificacion: subj.grade,
               semestre: subj.semester,
-              competencias,
+              competencias, // ahora es array de {id, name}
               nivel,
             };
           })
         );
         setAsignaturas(asignaturasData);
+
+        // Obtener totales de cada competencia única
+        const competenciasUnicas: Record<string, string> = {};
+        asignaturasData.forEach(a => {
+          (a.competencias || []).forEach((comp: {id: string, name: string}) => {
+            competenciasUnicas[comp.id] = comp.name;
+          });
+        });
+        // Fetch totales para cada competencia
+        const totales: Record<string, number> = {};
+        await Promise.all(Object.keys(competenciasUnicas).map(async (compId) => {
+          try {
+            const res = await fetch(`http://localhost:3001/api/v1/subjects/${compId}/countSubjects`);
+            if (res.ok) {
+              const data = await res.json();
+              totales[compId] = data.subjectCount || 0;
+            } else {
+              totales[compId] = 0;
+            }
+          } catch {
+            totales[compId] = 0;
+          }
+        }));
+        setCompetenciasTotales(totales);
       } catch (e) {
         setAsignaturas([]);
+        setCompetenciasTotales({});
       }
       setLoading(false);
     };
@@ -71,20 +101,32 @@ const PerformanceStudent = () => {
   );
 
   // Calcular todas las competencias únicas del estudiante y cuántas veces aparecen
-  const competenciasConteo: Record<string, number> = {};
+  const competenciasConteo: Record<string, { name: string, count: number, id: string }> = {};
   asignaturas.forEach(a => {
-    (a.competencias || []).forEach((comp: string) => {
-      competenciasConteo[comp] = (competenciasConteo[comp] || 0) + 1;
+    (a.competencias || []).forEach((comp: {id: string, name: string}) => {
+      if (!competenciasConteo[comp.id]) {
+        competenciasConteo[comp.id] = { name: comp.name, count: 0, id: comp.id };
+      }
+      competenciasConteo[comp.id].count += 1;
     });
   });
 
   // Generar arreglo para el gráfico con todas las competencias encontradas
   const totalAsignaturas = asignaturas.length;
-  const competenciasGrafico = Object.entries(competenciasConteo).map(([name, count]) => ({
-    name,
-    value: totalAsignaturas > 0 ? Math.round((count / totalAsignaturas) * 100) : 0,
-    color: "#1976d2"
-  }));
+  const competenciasGrafico = Object.values(competenciasConteo).map(({ name, count, id }) => {
+    console.log('Competencia:', name, 'ID:', id, 'Count:', count);
+    console.log('Total competencias:', competenciasTotales);
+    const totalCarrera = competenciasTotales[id] || 0;
+    
+    return {
+      name,
+      value: totalCarrera > 0 ? Math.round((count / totalCarrera) * 100) : 0,
+      color: "#1976d2",
+      id,
+      total: totalCarrera
+    };
+    
+  });
 
   return (
     <PerformanceStudentView
@@ -93,9 +135,10 @@ const PerformanceStudent = () => {
       asignaturas={asignaturas}
       loading={loading}
       competenciasGrafico={competenciasGrafico}
-      competenciasConteo={competenciasConteo}
+      competenciasConteo={Object.fromEntries(Object.entries(competenciasConteo).map(([k, v]) => [k, v.count]))}
       totalAsignaturas={totalAsignaturas}
       filteredHistorial={filteredHistorial}
+      competenciasTotales={competenciasTotales}
     />
   );
 };
