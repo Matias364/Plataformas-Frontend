@@ -81,7 +81,7 @@ function LifeNoteModal({ open, onClose, student }: LifeNoteModalProps) {
       </DialogTitle>
       <DialogContent>
         <Typography color="text.secondary" mb={2}>
-          Escribe una observación o comportamiento relevante para la hoja de vida del estudiante.
+          Escribe una observación o comportamiento relevante para la anotación del estudiante.
         </Typography>
         <TextField
           label="Anotación"
@@ -147,7 +147,7 @@ const LifeDocument = () => {
           <ArrowBackIosNewIcon fontSize="small" />
         </IconButton>
         <Typography variant="h4" fontWeight={700} color='black'>
-          Hojas de Vida
+          Anotaciones
         </Typography>
       </Box>
       <Typography color="text.secondary" fontSize={15} mb={2}>
@@ -191,7 +191,7 @@ const LifeDocument = () => {
           Enfermería Clinica
         </Typography>
         <Typography color="text.secondary" fontSize={15} mb={2}>
-          Hojas de vida de estudiantes | Codigo: ENF-301 | Semestre: 5to
+          Anotaciones de estudiantes | Codigo: ENF-301 | Semestre: 5to
         </Typography>
 
         <Box sx={{ mb: 2 }}>
@@ -260,7 +260,7 @@ const LifeDocument = () => {
                       }}
                       onClick={() => handleOpenModal(student)}
                     >
-                      Ver Hoja de Vida
+                      Ver Anotaciones
                     </Button>
                   </TableCell>
                 </TableRow>
