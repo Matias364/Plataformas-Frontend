@@ -1,20 +1,34 @@
-import { useState } from 'react';
-import { Box, Typography, Card, CardContent, Button, TextField} from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box, Typography, Card, TextField, CircularProgress, Alert } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import SidebarTeacherSubject from './SidebarTeacherSubject';
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import StudentsTeacherSubject from './StudentsTeacherSubject';
 import RegisterGradesSubject from './RegisterGradesSubject';
 import LifeDocument from './LifeDocument';
 import ECOEStatistics from './ECOEStatistics';
 import { logout } from '../../../utils/logout';
+import { useAuth } from '../../context/AuthContext';
+import { Course } from '../../../domain/course/Course';
+import { CourseService } from '../../../infrastructure/services/CourseService';
 
-const mockCompetencias = [
-  { nombre: "Valoracion y diagnostico", promedio: "Promedio actual" },
-  { nombre: "Habilidades tecnicas", promedio: "Promedio actual" },
-  { nombre: "Administracion de medicamentos", promedio: "Promedio actual" },
-];
+interface Competency {
+  id: string;
+  name: string;
+  description?: string;
+}
 
-const DashboardContent = () => (
+interface DashboardContentProps {
+  courses: Course[];
+  selectedCourse: Course | null;
+  onCourseChange: (course: Course) => void;
+  loading: boolean;
+  error: string | null;
+  competencies: Competency[];
+  subjectDescription: string;
+  loadingCompetencies: boolean;
+}
+
+const DashboardContent = ({ courses, selectedCourse, onCourseChange, loading, error, competencies, subjectDescription, loadingCompetencies }: DashboardContentProps) => (
   <Box sx={{ p: { xs: 0, md: 0, marginTop: 32 }, width: '100%' }}>
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
       <Box>
@@ -25,133 +39,230 @@ const DashboardContent = () => (
           Gestion de asignaturas y evaluacion de competencias
         </Typography>
       </Box>
-      <TextField
-        select
-        size="small"
-        value="ENF-301 - Enfermeria Clinica"
+      {loading ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <CircularProgress size={20} />
+          <Typography color="text.secondary">Cargando asignaturas...</Typography>
+        </Box>
+      ) : error ? (
+        <Alert severity="error" sx={{ minWidth: 240 }}>
+          {error}
+        </Alert>
+      ) : (
+        <TextField
+          select
+          size="small"
+          value={selectedCourse?.id?.toString() || ''}
+          onChange={(e) => {
+            const course = courses.find(c => c.id.toString() === e.target.value);
+            if (course) onCourseChange(course);
+          }}
+          sx={{
+            minWidth: 240,
+            bgcolor: '#fff',
+            borderRadius: 2,
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E0E0E0' },
+          }}
+          InputProps={{
+            sx: { fontWeight: 500 }
+          }}
+          SelectProps={{
+            native: true,
+          }}
+          disabled={courses.length === 0}
+        >
+          {courses.length === 0 ? (
+            <option value="">No hay asignaturas asignadas</option>
+          ) : (
+            <>
+              <option value="">Seleccione una asignatura</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.id.toString()}>
+                  {course.code} - {course.name}
+                </option>
+              ))}
+            </>
+          )}
+        </TextField>
+      )}
+    </Box>
+
+    {selectedCourse && (
+      <Card
+        variant="outlined"
         sx={{
-          minWidth: 240,
+          borderRadius: 3,
+          boxShadow: 0,
+          borderColor: '#ECECEC',
+          mb: 2,
+          p: 2,
           bgcolor: '#fff',
-          borderRadius: 2,
-          '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E0E0E0' },
-        }}
-        InputProps={{
-          sx: { fontWeight: 500 }
-        }}
-        SelectProps={{
-          native: true,
-        }}
-        disabled
-      >
-        <option value="ENF-301 - Enfermeria Clinica">ENF-301 - Enfermeria Clinica</option>
-      </TextField>
-    </Box>
-
-    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 4 }}>
-      <Card
-        variant="outlined"
-        sx={{
-          flex: 1,
-          borderRadius: 3,
-          boxShadow: 0,
-          borderColor: '#ECECEC',
-          minWidth: 320,
         }}
       >
-        <CardContent>
-          <Typography fontWeight={600} mb={1}>Asignatura</Typography>
-          <Typography variant="h6" fontWeight={700}>Enfermeria Clinica</Typography>
-          <Typography color="text.secondary" fontSize={15} mb={2}>
-            Codigo: ENF-301 | Semestre: 5to
-          </Typography>
-          
-        </CardContent>
-      </Card>
-      <Card
-        variant="outlined"
-        sx={{
-          flex: 1,
-          borderRadius: 3,
-          boxShadow: 0,
-          borderColor: '#ECECEC',
-          minWidth: 320,
-        }}
-      >
-        <CardContent>
-          <Typography fontWeight={600} mb={1}>Estudiantes</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h4" fontWeight={700}>32</Typography>
-            <PeopleAltOutlinedIcon sx={{ color: '#7C3AED', fontSize: 32 }} />
+        <Typography variant="h6" fontWeight={700} mb={0.5}>
+          Competencias Evaluadas
+        </Typography>
+        <Typography color="text.secondary" fontSize={15} mb={2}>
+          {subjectDescription}
+        </Typography>
+        {loadingCompetencies ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
+            <CircularProgress size={20} />
+            <Typography color="text.secondary">Cargando competencias...</Typography>
           </Box>
-          <Typography color="text.secondary" fontSize={15} mb={2}>
-            Estudiantes matriculados en la asignatura
-          </Typography>
-          <Button
-            variant="outlined"
-            sx={{
-              borderRadius: 2,
-              borderColor: '#E0E0E0',
-              textTransform: 'none',
-              fontWeight: 500,
-              width: '100%',
-              py: 1.2,
-            }}
-          >
-            Ver Estudiantes
-          </Button>
-        </CardContent>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {competencies.length === 0 ? (
+              <Typography color="text.secondary">No hay competencias asociadas a esta asignatura.</Typography>
+            ) : (
+              competencies.map((comp) => (
+                <Card
+                  key={comp.id}
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 2,
+                    boxShadow: 0,
+                    borderColor: '#ECECEC',
+                    bgcolor: '#FAFAFA',
+                    px: 3,
+                    py: 2,
+                  }}
+                >
+                  <Typography fontWeight={600}>{comp.name}</Typography>
+                  {comp.description && (
+                    <Typography color="text.secondary" fontSize={15}>
+                      {comp.description}
+                    </Typography>
+                  )}
+                </Card>
+              ))
+            )}
+          </Box>
+        )}
       </Card>
-    </Box>
+    )}
 
-    <Card
-      variant="outlined"
-      sx={{
-        borderRadius: 3,
-        boxShadow: 0,
-        borderColor: '#ECECEC',
-        mb: 2,
-        p: 2,
-        bgcolor: '#fff',
-      }}
-    >
-      <Typography variant="h6" fontWeight={700} mb={0.5}>
-        Competencias Evaluadas
-      </Typography>
-      <Typography color="text.secondary" fontSize={15} mb={2}>
-        Competencias relacionadas con la asignatura Enfermeria Clinica
-      </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {mockCompetencias.map((comp, idx) => (
-          <Card
-            key={idx}
-            variant="outlined"
-            sx={{
-              borderRadius: 2,
-              boxShadow: 0,
-              borderColor: '#ECECEC',
-              bgcolor: '#FAFAFA',
-              px: 3,
-              py: 2,
-            }}
-          >
-            <Typography fontWeight={600}>{comp.nombre}</Typography>
-            <Typography color="text.secondary" fontSize={15}>
-              {comp.promedio}
-            </Typography>
-          </Card>
-        ))}
-      </Box>
-    </Card>
+    {!selectedCourse && !loading && !error && courses.length > 0 && (
+      <Card
+        variant="outlined"
+        sx={{
+          borderRadius: 3,
+          boxShadow: 0,
+          borderColor: '#ECECEC',
+          mb: 2,
+          p: 3,
+          bgcolor: '#fff',
+          textAlign: 'center'
+        }}
+      >
+        <Typography variant="h6" fontWeight={600} mb={1}>
+          Seleccione una asignatura
+        </Typography>
+        <Typography color="text.secondary" fontSize={15}>
+          Para comenzar, seleccione una asignatura del selector de arriba
+        </Typography>
+      </Card>
+    )}
   </Box>
 );
 
 const TeacherSubjectDashboard = () => {
   const [selected, setSelected] = useState(0);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [competencies, setCompetencies] = useState<Competency[]>([]);
+  const [subjectDescription, setSubjectDescription] = useState('');
+  const [loadingCompetencies, setLoadingCompetencies] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const courseService = new CourseService();
+
+  useEffect(() => {
+    const checkUserAndLoadCourses = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Verificar si el usuario está autenticado y es docente_asignatura
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        if (user.role !== 'docente_asignatura') {
+          setError('No tienes permisos para acceder a esta sección');
+          return;
+        }
+
+        // Cargar las asignaturas del docente
+        const teacherCourses = await courseService.getSubjectTeacher();
+        setCourses(teacherCourses);
+        
+        // Seleccionar automáticamente la primera asignatura si existe
+        if (teacherCourses.length > 0) {
+          setSelectedCourse(teacherCourses[0]);
+        }
+
+      } catch (err) {
+        console.error('Error loading courses:', err);
+        setError('Error al cargar las asignaturas. Por favor, inténtelo de nuevo.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkUserAndLoadCourses();
+  }, [user, navigate]);
+
+  useEffect(() => {
+    const fetchCompetencies = async () => {
+      if (!selectedCourse) {
+        setCompetencies([]);
+        setSubjectDescription('');
+        return;
+      }
+      setLoadingCompetencies(true);
+      try {
+        setSubjectDescription(selectedCourse.description || '');
+        const data = await courseService.getSubjectCompetencies(selectedCourse.id);
+        // El JSON es un array de objetos con propiedad competency
+        setCompetencies((Array.isArray(data) ? data : []).map((item: any) => ({
+          id: item.competency?.id || item.competency?._id || item.id || item._id,
+          name: item.competency?.name || item.competency?.nombre || item.name || item.nombre,
+          description: item.competency?.description || item.competency?.descripcion || item.description || item.descripcion || '',
+        })));
+      } catch (e) {
+        setCompetencies([]);
+      } finally {
+        setLoadingCompetencies(false);
+      }
+    };
+    fetchCompetencies();
+  }, [selectedCourse]);
+
+  const handleCourseChange = (course: Course) => {
+    setSelectedCourse(course);
+    setCompetencies([]); // Limpiar competencias al cambiar
+    setSubjectDescription(''); // Limpiar descripción al cambiar
+  };
 
   const renderContent = () => {
     switch (selected) {
       case 0:
-        return <DashboardContent />;
+        return (
+          <DashboardContent
+            courses={courses}
+            selectedCourse={selectedCourse}
+            onCourseChange={handleCourseChange}
+            loading={loading}
+            error={error}
+            competencies={competencies}
+            subjectDescription={subjectDescription}
+            loadingCompetencies={loadingCompetencies}
+          />
+        );
       case 1:
         return <StudentsTeacherSubject />;
       case 2:
@@ -160,12 +271,42 @@ const TeacherSubjectDashboard = () => {
         return <LifeDocument/>;
       case 4:
         return <ECOEStatistics/>;
-      // Puedes agregar más casos para otras secciones
       default:
-        
-        return <DashboardContent />;
+        return (
+          <DashboardContent 
+            courses={courses}
+            selectedCourse={selectedCourse}
+            onCourseChange={handleCourseChange}
+            loading={loading}
+            error={error}
+            competencies={competencies}
+            subjectDescription={subjectDescription}
+            loadingCompetencies={loadingCompetencies}
+          />
+        );
     }
   };
+
+  // Mostrar loading mientras se verifican permisos y se cargan datos iniciales
+  if (loading && !user) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Mostrar error si no tiene permisos
+  if (error && !courses.length && user?.role !== 'docente_asignatura') {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', p: 3 }}>
+        <Alert severity="error" sx={{ maxWidth: 500 }}>
+          <Typography variant="h6" gutterBottom>Acceso Denegado</Typography>
+          <Typography>{error}</Typography>
+        </Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#FAFAFA" }}>
