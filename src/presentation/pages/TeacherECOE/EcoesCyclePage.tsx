@@ -9,7 +9,6 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    Skeleton,
     CircularProgress,
 } from "@mui/material";
 import { getAvailableEcoes, fetchStudentsByEcoeId, Student } from "../../../infrastructure/services/EcoeService";
