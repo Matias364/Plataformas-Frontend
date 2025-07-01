@@ -14,27 +14,31 @@ const PerformanceStudent = () => {
         // Obtener info del estudiante
         const accessToken = localStorage.getItem('access_token');
         console.log('Access Token:', accessToken);
-        const resStudent = await fetch('http://localhost:3001/api/v1/students/me/subjects', {
+        const resStudent = await fetch('http://localhost:3001/api/v1/students/me/subjects/enrollments', {
           headers: {
             Authorization: `Bearer ${accessToken?.replace(/"/g, '')}`,
           },
         });
+        //console.log('Response from student API:', await resStudent.json());
         if (!resStudent.ok) {
+          
           throw new Error('No se pudo obtener la información del estudiante');
         }
         const student = await resStudent.json();
-
+        console.log('Student info:', student);
         // Obtener info de cada asignatura y sus competencias (incluyendo id de competencia)
         const asignaturasData = await Promise.all(
-          (student.subjects || []).map(async (subj: any) => {
+          (student.subjectEnrollments || []).map(async (subj: any) => {
             // Obtener datos de la asignatura
+            console.log('Subject Enrollment:', subj);
             const resAsig = await fetch(`http://localhost:3001/api/v1/subjects/${subj.subjectId}`);
             const asigInfo = await resAsig.json();
+            console.log('Asignatura info:', asigInfo);
 
             // Obtener competencias de la asignatura
             let competencias: { id: string, name: string }[] = [];
             try {
-              const resCompetencias = await fetch(`http://localhost:3001/api/v1/students/subjects/${subj.subjectId}/competencies`);
+              const resCompetencias = await fetch(`http://localhost:3001/api/v1/subjects/${subj.subjectId}/competencies`);
               if (resCompetencias.ok) {
                 console.log('Competencias response:', resCompetencias);
                 const competenciasData = await resCompetencias.json();
@@ -42,6 +46,7 @@ const PerformanceStudent = () => {
                   id: comp.competency.id || comp.competency._id,
                   name: comp.competency.name || comp.competency.nombre
                 }));
+
               }
             } catch (err) {
               competencias = [];
