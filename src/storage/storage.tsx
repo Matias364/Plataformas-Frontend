@@ -19,7 +19,7 @@ export const saveToStorage = (key: string, value: any) => {
       }
       return null;
     } catch (error) {
-      console.error('Error al leer desde localStorage:', error);
+      
       return null;
     }
   };
