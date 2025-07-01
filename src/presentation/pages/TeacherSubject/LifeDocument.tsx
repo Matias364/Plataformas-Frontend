@@ -18,11 +18,18 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Alert,
 } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import WarningIcon from '@mui/icons-material/Warning';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Course } from '../../../domain/course/Course';
 import { CourseService } from '../../../infrastructure/services/CourseService';
 
@@ -33,9 +40,9 @@ interface StudentInfo {
   email: string;
   grade: number;
   is_active: boolean;
-  enrollmentId: string; // Agregar enrollmentId como requerido
-  annotations?: StudentAnnotation[]; // Agregar anotaciones
-  lastAnnotationDate?: string; // Fecha de la última anotación
+  enrollmentId: string; 
+  annotations?: StudentAnnotation[]; 
+  lastAnnotationDate?: string; 
 }
 
 interface StudentAnnotation {
@@ -124,6 +131,211 @@ function CreateAnnotationModal({ open, onClose, student, onAnnotationCreated }: 
   );
 }
 
+interface AnnotationsModalProps {
+  open: boolean;
+  onClose: () => void;
+  student: StudentInfo | null;
+  onCreateAnnotation: () => void;
+  onEditAnnotation: (annotation: StudentAnnotation) => void;
+  onDeleteAnnotation: (annotationId: string) => void;
+}
+
+function AnnotationsModal({ 
+  open, 
+  onClose, 
+  student, 
+  onCreateAnnotation, 
+  onEditAnnotation, 
+  onDeleteAnnotation 
+}: AnnotationsModalProps) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        Anotaciones de {student?.name}
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={onCreateAnnotation}
+            sx={{ mb: 2 }}
+          >
+            Nueva anotación
+          </Button>
+        </Box>
+        
+        {!student?.annotations || student.annotations.length === 0 ? (
+          <Typography color="text.secondary" align="center" py={4}>
+            No hay anotaciones para este estudiante
+          </Typography>
+        ) : (
+          <List>
+            {student.annotations.map((annotation, index) => (
+              <Box key={annotation.id}>
+                <ListItem 
+                  sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    py: 2 
+                  }}
+                >
+                  <ListItemText
+                    primary={annotation.comment}
+                    secondary={`Creado: ${new Date(annotation.createdAt).toLocaleString('es-ES')}${annotation.updatedAt && annotation.updatedAt !== annotation.createdAt ? ` | Actualizado: ${new Date(annotation.updatedAt).toLocaleString('es-ES')}` : ''}`}
+                    sx={{ flex: 1, mr: 2 }}
+                  />
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => onEditAnnotation(annotation)}
+                      sx={{ color: '#FF9800' }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => onDeleteAnnotation(annotation.id)}
+                      sx={{ color: '#F44336' }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                </ListItem>
+                {index < (student.annotations?.length || 0) - 1 && <Divider />}
+              </Box>
+            ))}
+          </List>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} variant="outlined">
+          Cerrar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+interface EditAnnotationModalProps {
+  open: boolean;
+  onClose: () => void;
+  annotation: StudentAnnotation | null;
+  onSave: (annotationId: string, comment: string) => void;
+}
+
+function EditAnnotationModal({ open, onClose, annotation, onSave }: EditAnnotationModalProps) {
+  const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (annotation) {
+      setComment(annotation.comment);
+    }
+  }, [annotation]);
+
+  const handleSave = async () => {
+    if (!annotation || !comment.trim()) return;
+
+    setLoading(true);
+    try {
+      await onSave(annotation.id, comment.trim());
+      onClose();
+    } catch (error) {
+      console.error('Error editing annotation:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        Editar anotación
+      </DialogTitle>
+      <DialogContent>
+        <TextField
+          label="Anotación"
+          multiline
+          minRows={4}
+          fullWidth
+          value={comment}
+          onChange={e => setComment(e.target.value)}
+          sx={{ mt: 1 }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} variant="outlined" disabled={loading}>
+          Cancelar
+        </Button>
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          disabled={!comment.trim() || loading}
+        >
+          {loading ? 'Guardando...' : 'Guardar'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+interface DeleteConfirmationModalProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  annotationText: string;
+}
+
+function DeleteConfirmationModal({ open, onClose, onConfirm, annotationText }: DeleteConfirmationModalProps) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <WarningIcon sx={{ color: '#F44336' }} />
+        Confirmar eliminación
+      </DialogTitle>
+      <DialogContent>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Esta acción no se puede deshacer
+        </Alert>
+        <Typography variant="body1" mb={2}>
+          ¿Estás seguro de que quieres eliminar esta anotación?
+        </Typography>
+        <Box 
+          sx={{ 
+            p: 2, 
+            bgcolor: '#f5f5f5', 
+            borderRadius: 1, 
+            border: '1px solid #e0e0e0' 
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" fontStyle="italic">
+            "{annotationText}"
+          </Typography>
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ p: 2, gap: 1 }}>
+        <Button 
+          onClick={onClose} 
+          variant="outlined"
+          sx={{ minWidth: 100 }}
+        >
+          Cancelar
+        </Button>
+        <Button
+          onClick={onConfirm}
+          variant="contained"
+          color="error"
+          sx={{ minWidth: 100 }}
+        >
+          Eliminar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 interface LifeNoteModalProps {
   open: boolean;
   onClose: () => void;
@@ -180,6 +392,12 @@ const LifeDocument = () => {
   const [search, setSearch] = useState('');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedStudentForAnnotation, setSelectedStudentForAnnotation] = useState<StudentInfo | null>(null);
+  const [annotationsModalOpen, setAnnotationsModalOpen] = useState(false);
+  const [currentStudentAnnotations, setCurrentStudentAnnotations] = useState<StudentInfo | null>(null);
+  const [editAnnotationModalOpen, setEditAnnotationModalOpen] = useState(false);
+  const [selectedAnnotation, setSelectedAnnotation] = useState<StudentAnnotation | null>(null);
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [annotationToDelete, setAnnotationToDelete] = useState<StudentAnnotation | null>(null);
   const [selectedStudent] = useState<{
     id: string;
     name: string;
@@ -286,55 +504,145 @@ const LifeDocument = () => {
     fetchStudents();
   }, [selectedCourse]);
 
-  const handleCreateAnnotation = (student: StudentInfo) => {
-    setSelectedStudentForAnnotation(student);
-    setCreateModalOpen(true);
+  const handleViewAnnotations = (student: StudentInfo) => {
+    setCurrentStudentAnnotations(student);
+    setAnnotationsModalOpen(true);
+  };
+
+  const handleCreateAnnotationFromModal = () => {
+    if (currentStudentAnnotations) {
+      setSelectedStudentForAnnotation(currentStudentAnnotations);
+      setAnnotationsModalOpen(false);
+      setCreateModalOpen(true);
+    }
+  };
+
+  const handleEditAnnotation = (annotation: StudentAnnotation) => {
+    setSelectedAnnotation(annotation);
+    setEditAnnotationModalOpen(true);
+  };
+
+  const handleSaveEditAnnotation = async (annotationId: string, comment: string) => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:3001/api/v1/students/annotations/${annotationId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          comment: comment
+        })
+      });
+
+      if (response.ok && currentStudentAnnotations && selectedCourse) {
+        // Actualizar las anotaciones del estudiante
+        await refreshStudentAnnotations(currentStudentAnnotations.id);
+      } else {
+        console.error('Error editing annotation');
+      }
+    } catch (error) {
+      console.error('Error editing annotation:', error);
+    }
+  };
+
+  const handleDeleteAnnotation = async (annotationId: string) => {
+    // Buscar la anotación en el estudiante actual del modal
+    const annotation = currentStudentAnnotations?.annotations?.find(a => a.id === annotationId);
+    if (annotation) {
+      setAnnotationToDelete(annotation);
+      setDeleteConfirmationOpen(true);
+    }
+  };
+
+  const confirmDeleteAnnotation = async () => {
+    if (!annotationToDelete) return;
+
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:3001/api/v1/students/annotations/${annotationToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (response.ok && currentStudentAnnotations && selectedCourse) {
+        // Actualizar las anotaciones del estudiante
+        await refreshStudentAnnotations(currentStudentAnnotations.id);
+        setDeleteConfirmationOpen(false);
+        setAnnotationToDelete(null);
+      } else {
+        console.error('Error deleting annotation');
+      }
+    } catch (error) {
+      console.error('Error deleting annotation:', error);
+    }
+  };
+
+  const refreshStudentAnnotations = async (studentId: string) => {
+    if (!selectedCourse) return;
+    
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const annotationsRes = await fetch(
+        `http://localhost:3001/api/v1/students/${studentId}/annotations/course/${selectedCourse.id}`,
+        {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }
+      );
+      
+      if (annotationsRes.ok) {
+        const annotations: StudentAnnotation[] = await annotationsRes.json();
+        
+        // Actualizar tanto el estudiante en la lista como el estudiante actual del modal
+        setStudentsData(prevStudents => 
+          prevStudents.map(student => {
+            if (student.id === studentId) {
+              let lastAnnotationDate: string | undefined;
+              if (annotations.length > 0) {
+                const sortedAnnotations = annotations.sort((a, b) => 
+                  new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
+                );
+                lastAnnotationDate = sortedAnnotations[0].updatedAt || sortedAnnotations[0].createdAt;
+              }
+              
+              const updatedStudent = {
+                ...student,
+                annotations: annotations,
+                lastAnnotationDate: lastAnnotationDate,
+              };
+              
+              // Si es el estudiante actual del modal, también actualizar ese estado
+              if (currentStudentAnnotations && currentStudentAnnotations.id === studentId) {
+                setCurrentStudentAnnotations(updatedStudent);
+              }
+              
+              return updatedStudent;
+            }
+            return student;
+          })
+        );
+      }
+    } catch (error) {
+      console.error('Error refreshing annotations:', error);
+    }
   };
 
   const handleAnnotationCreated = async () => {
     // Recargar las anotaciones del estudiante específico
     if (selectedStudentForAnnotation && selectedCourse) {
-      try {
-        const accessToken = localStorage.getItem('access_token');
-        const annotationsRes = await fetch(
-          `http://localhost:3001/api/v1/students/${selectedStudentForAnnotation.id}/annotations/course/${selectedCourse.id}`,
-          {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-          }
-        );
-        
-        if (annotationsRes.ok) {
-          const annotations: StudentAnnotation[] = await annotationsRes.json();
-          
-          // Actualizar el estudiante en la lista
-          setStudentsData(prevStudents => 
-            prevStudents.map(student => {
-              if (student.id === selectedStudentForAnnotation.id) {
-                let lastAnnotationDate: string | undefined;
-                if (annotations.length > 0) {
-                  const sortedAnnotations = annotations.sort((a, b) => 
-                    new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
-                  );
-                  lastAnnotationDate = sortedAnnotations[0].updatedAt || sortedAnnotations[0].createdAt;
-                }
-                
-                return {
-                  ...student,
-                  annotations: annotations,
-                  lastAnnotationDate: lastAnnotationDate,
-                };
-              }
-              return student;
-            })
-          );
-        }
-      } catch (error) {
-        console.error('Error updating annotations:', error);
-      }
+      await refreshStudentAnnotations(selectedStudentForAnnotation.id);
     }
     
     setCreateModalOpen(false);
     setSelectedStudentForAnnotation(null);
+    
+    // Si venimos del modal de anotaciones, volver a abrirlo
+    if (currentStudentAnnotations) {
+      setAnnotationsModalOpen(true);
+    }
   };
 
   const filteredStudents = studentsData.filter(
@@ -478,80 +786,30 @@ const LifeDocument = () => {
                       }
                     </TableCell>
                     <TableCell>
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<AddIcon />}
-                          sx={{
-                            borderRadius: 1.5,
-                            textTransform: 'none',
-                            fontWeight: 500,
-                            bgcolor: '#fff',
-                            borderColor: '#E0E0E0',
-                            color: '#4CAF50',
-                            minWidth: 'auto',
-                            px: 1.5,
-                            py: 0.5,
-                            fontSize: '0.75rem',
-                            '&:hover': {
-                              borderColor: '#4CAF50',
-                              bgcolor: '#F1F8E9',
-                            },
-                          }}
-                          onClick={() => handleCreateAnnotation(student)}
-                        >
-                          Crear
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<EditIcon />}
-                          sx={{
-                            borderRadius: 1.5,
-                            textTransform: 'none',
-                            fontWeight: 500,
-                            bgcolor: '#fff',
-                            borderColor: '#E0E0E0',
-                            color: '#FF9800',
-                            minWidth: 'auto',
-                            px: 1.5,
-                            py: 0.5,
-                            fontSize: '0.75rem',
-                            '&:hover': {
-                              borderColor: '#FF9800',
-                              bgcolor: '#FFF3E0',
-                            },
-                          }}
-                          onClick={() => console.log('Editar anotación')}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<DeleteIcon />}
-                          sx={{
-                            borderRadius: 1.5,
-                            textTransform: 'none',
-                            fontWeight: 500,
-                            bgcolor: '#fff',
-                            borderColor: '#E0E0E0',
-                            color: '#F44336',
-                            minWidth: 'auto',
-                            px: 1.5,
-                            py: 0.5,
-                            fontSize: '0.75rem',
-                            '&:hover': {
-                              borderColor: '#F44336',
-                              bgcolor: '#FFEBEE',
-                            },
-                          }}
-                          onClick={() => console.log('Eliminar anotación')}
-                        >
-                          Eliminar
-                        </Button>
-                      </Box>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<VisibilityIcon />}
+                        sx={{
+                          borderRadius: 1.5,
+                          textTransform: 'none',
+                          fontWeight: 500,
+                          bgcolor: '#fff',
+                          borderColor: '#E0E0E0',
+                          color: '#2196F3',
+                          minWidth: 'auto',
+                          px: 1.5,
+                          py: 0.5,
+                          fontSize: '0.75rem',
+                          '&:hover': {
+                            borderColor: '#2196F3',
+                            bgcolor: '#E3F2FD',
+                          },
+                        }}
+                        onClick={() => handleViewAnnotations(student)}
+                      >
+                        Ver anotaciones
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -566,6 +824,32 @@ const LifeDocument = () => {
         onClose={() => setCreateModalOpen(false)}
         student={selectedStudentForAnnotation}
         onAnnotationCreated={handleAnnotationCreated}
+      />
+
+      <AnnotationsModal
+        open={annotationsModalOpen}
+        onClose={() => setAnnotationsModalOpen(false)}
+        student={currentStudentAnnotations}
+        onCreateAnnotation={handleCreateAnnotationFromModal}
+        onEditAnnotation={handleEditAnnotation}
+        onDeleteAnnotation={handleDeleteAnnotation}
+      />
+
+      <EditAnnotationModal
+        open={editAnnotationModalOpen}
+        onClose={() => setEditAnnotationModalOpen(false)}
+        annotation={selectedAnnotation}
+        onSave={handleSaveEditAnnotation}
+      />
+
+      <DeleteConfirmationModal
+        open={deleteConfirmationOpen}
+        onClose={() => {
+          setDeleteConfirmationOpen(false);
+          setAnnotationToDelete(null);
+        }}
+        onConfirm={confirmDeleteAnnotation}
+        annotationText={annotationToDelete?.comment || ''}
       />
 
       <LifeNoteModal
