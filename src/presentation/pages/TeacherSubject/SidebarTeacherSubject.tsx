@@ -15,7 +15,7 @@ const menuItems = [
   { label: 'Dashboard', icon: <HomeIcon color="primary" /> },
   { label: 'Estudiantes', icon: <PeopleIcon sx={{ color: "#5EC69C" }} /> },
   { label: 'Registro de Notas', icon: <AssignmentIcon sx={{ color: "#6CC3F8" }} /> },
-  { label: 'Hojas de Vida', icon: <MenuBookIcon sx={{ color: "#F8C46C" }} /> },
+  { label: 'Anotaciones', icon: <MenuBookIcon sx={{ color: "#F8C46C" }} /> },
   { label: 'Estadisticas ECOE', icon: <BarChartIcon sx={{ color: "#B36CF8" }} /> },
 ];
 
