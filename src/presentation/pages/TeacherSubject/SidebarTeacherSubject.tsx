@@ -12,7 +12,7 @@ import { useState } from 'react';
 const drawerWidth = 240;
 
 const menuItems = [
-  { label: 'Dashboard', icon: <HomeIcon color="primary" /> },
+  { label: 'Competencias', icon: <HomeIcon color="primary" /> },
   { label: 'Estudiantes', icon: <PeopleIcon sx={{ color: "#5EC69C" }} /> },
   { label: 'Registro de Notas', icon: <AssignmentIcon sx={{ color: "#6CC3F8" }} /> },
   { label: 'Anotaciones', icon: <MenuBookIcon sx={{ color: "#F8C46C" }} /> },
