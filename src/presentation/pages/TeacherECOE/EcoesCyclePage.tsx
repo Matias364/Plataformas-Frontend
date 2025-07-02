@@ -124,30 +124,54 @@ const EcoesCyclePage: React.FC = () => {
                 </Typography>
             ) : (
                 <>
-                    <FormControl sx={{ minWidth: 123, mb: 3 }}>
-                        <InputLabel id="select-ecoe-label">Seleccione ECOE</InputLabel>
-                        <Select
-                            labelId="select-ecoe-label"
-                            value={selectedEcoe?.id ?? ""}
-                            label="Seleccione ECOE"
-                            onChange={(e) => {
-                                const ecoeId = Number(e.target.value);
-                                const newEcoe = ecoes.find((e) => e.id === ecoeId) || null;
-                                setSelectedEcoe(newEcoe);
-                            }}
-                            sx={{ textAlign: "center"}}
-                            renderValue={(selected) => {
-                                const ecoe = ecoes.find(e => e.id === selected);
-                                return ecoe ? `Año: ${ecoe.year} | Semestre: ${ecoe.semester}` : "";
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                        <FormControl sx={{ minWidth: 123 }}>
+                            <InputLabel id="select-ecoe-label">Seleccione ECOE</InputLabel>
+                            <Select
+                                labelId="select-ecoe-label"
+                                value={selectedEcoe?.id ?? ""}
+                                label="Seleccione ECOE"
+                                onChange={(e) => {
+                                    const ecoeId = Number(e.target.value);
+                                    const newEcoe = ecoes.find((e) => e.id === ecoeId) || null;
+                                    setSelectedEcoe(newEcoe);
+                                }}
+                                sx={{ textAlign: "center"}}
+                                renderValue={(selected) => {
+                                    const ecoe = ecoes.find(e => e.id === selected);
+                                    return ecoe ? `Año: ${ecoe.year} | Semestre: ${ecoe.semester}` : "";
+                                }}
+                            >
+                                {ecoes.map((ecoe) => (
+                                    <MenuItem key={ecoe.id} value={ecoe.id} sx={{ justifyContent: "center", textAlign: "center" }}>
+                                        {`${ecoe.year}-${ecoe.semester}`}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        <Button
+                            variant="contained"
+                            sx={{
+                                borderRadius: 2,
+                                textTransform: "none",
+                                fontWeight: 600,
+                                bgcolor: primaryBlue,
+                                color: "#fff",
+                                minHeight: 36,
+                                px: 3,
+                                transition: "background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease",
+                                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                                "&:hover": {
+                                    bgcolor: primaryBlueHover,
+                                    boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.15)",
+                                    transform: "translateY(-1px)",
+                                },
                             }}
                         >
-                            {ecoes.map((ecoe) => (
-                                <MenuItem key={ecoe.id} value={ecoe.id} sx={{ justifyContent: "center", textAlign: "center" }}>
-                                    {`${ecoe.year}-${ecoe.semester}`}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                            + Agregar estudiantes
+                        </Button>
+                    </Box>
 
                     {selectedEcoe && (
                         loading ? (
@@ -162,8 +186,7 @@ const EcoesCyclePage: React.FC = () => {
                                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
                                     Estudiantes de {selectedEcoe?.name}
                                 </Typography>
-
-                                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
                                     <thead>
                                         <tr style={{ background: "#fff" }}>
                                             <th style={{ textAlign: "left", padding: 8, color: "#888" }}>Rut</th>
@@ -178,7 +201,7 @@ const EcoesCyclePage: React.FC = () => {
                                                 <td style={{ padding: 8 }}>{s.rut}</td>
                                                 <td style={{ padding: 8 }}>{s.name}</td>
                                                 <td style={{ padding: 8 }}>{s.email}</td>
-                                                <td style={{ padding: 8 }}>{s.grade > 0 ? s.grade.toFixed(1) : "-"}</td>
+                                                <td style={{ padding: 8 }}>{s.grade > 0 ? s.grade.toFixed(1) : "N/A"}</td>
                                             </tr>
                                         ))}
                                     </tbody>
