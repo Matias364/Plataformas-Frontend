@@ -153,14 +153,14 @@ const EcoesCyclePage: React.FC = () => {
                         loading ? (
                             <Paper sx={{ p: 3, borderRadius: 3 }}>
                                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-                                    Cargando estudiantes de {selectedEcoe?.name}...
+                                    Cargando estudiantes de ECOE...
                                 </Typography>
                                 <CircularProgress color="primary" />
                             </Paper>
                         ) : (
                             <Paper sx={{ p: 3, borderRadius: 3, maxHeight: 500, overflowY: "auto" }}>
                                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-                                    Estudiantes de {selectedEcoe?.name}
+                                    Lista de estudiantes ingresados
                                 </Typography>
 
                                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
