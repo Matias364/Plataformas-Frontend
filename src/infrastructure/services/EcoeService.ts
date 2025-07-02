@@ -94,4 +94,42 @@ export const getStudentEcoeAvg = async (userId: string, ecoeId: number) => {
     return response.data;
 };
 
-;
+export const getStudentsWithoutEcoe = async (cycle: string): Promise<Student[]> => {
+    try {
+        const response = await axios.get(`http://localhost:3002/api/v1/ecoes/students-without-ecoe/${cycle}`);
+        const studentsData = response.data;
+        
+        // Obtenemos información detallada de cada estudiante usando Promise.all
+        const students = await Promise.all(
+            studentsData.map(async (studentData: any) => {
+                try {
+                    // El endpoint devuelve objetos con {id, rut, currentSemester}
+                    const studentId = studentData.id || studentData.rut;
+                    const studentInfoResponse = await axios.get(`http://localhost:3001/api/v1/students/${studentId}`);
+                    const studentInfo = studentInfoResponse.data;
+                    
+                    return {
+                        rut: studentInfo.rut || studentData.rut || studentId,
+                        name: studentInfo.fullname || studentInfo.name || 'Nombre no disponible',
+                        email: studentInfo.email || 'Email no disponible',
+                        grade: 0 // Los estudiantes sin ECOE no tienen calificación
+                    };
+                } catch (error) {
+                    console.warn(`Error obteniendo info del estudiante ${studentData.id || studentData.rut}:`, error);
+                    // Fallback con información básica
+                    return {
+                        rut: studentData.rut || studentData.id || 'RUT no disponible',
+                        name: 'Información no disponible',
+                        email: 'No disponible',
+                        grade: 0
+                    };
+                }
+            })
+        );
+        
+        return students;
+    } catch (error) {
+        console.error("Error al obtener estudiantes sin ECOE", error);
+        throw new Error("No se pudieron obtener los estudiantes sin ECOE");
+    }
+};
