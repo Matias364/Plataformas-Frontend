@@ -697,7 +697,7 @@ const LifeDocument = () => {
               <option value="">Seleccione un curso</option>
               {courses.map(course => (
                 <option key={course.id} value={course.id.toString()}>
-                  {`${course.name} | Semestre: ${course.semester} | Año: ${course.year}`}
+                  {`${course.subject.name} | Semestre: ${course.semester} | Año: ${course.year}`}
                 </option>
               ))}
             </>
@@ -716,7 +716,7 @@ const LifeDocument = () => {
         }}
       >
         <Typography variant="h6" fontWeight={700} mb={0.5}>
-          {selectedCourse?.name || 'Seleccione un curso'}
+          {selectedCourse?.subject.name || 'Seleccione un curso'}
         </Typography>
         <Typography color="text.secondary" fontSize={15} mb={2}>
           Anotaciones de estudiantes | Semestre: {selectedCourse?.semester} | Año: {selectedCourse?.year}
