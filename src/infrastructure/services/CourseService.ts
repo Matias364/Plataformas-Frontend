@@ -49,13 +49,14 @@ export class CourseService implements ICourseService {
       });
       if (response.status === 200) {
         // Map id to courseId (id is the root id)
-        return (response.data || []).map((item: any) => ({
-          id: item.id, // courseId
-          code: item.code || '',
-          name: item.subject || '', // Usar subject como nombre
+        return (response.data || []).map((item: Course) => ({
+          id: item.id, 
           semester: item.semester,
           year: item.year,
-          description: item.description || '',
+          subject: {
+            id: item.subject.id,
+            name: item.subject.name
+          },
         }));
       } else {
         throw new Error('Failed to fetch teacher courses');
