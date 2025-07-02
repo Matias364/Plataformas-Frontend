@@ -16,7 +16,7 @@ const menuItems = [
   { label: 'Estudiantes', icon: <PeopleIcon sx={{ color: "#5EC69C" }} /> },
   { label: 'Registro de Notas', icon: <AssignmentIcon sx={{ color: "#6CC3F8" }} /> },
   { label: 'Anotaciones', icon: <MenuBookIcon sx={{ color: "#F8C46C" }} /> },
-  { label: 'Estadisticas ECOE', icon: <BarChartIcon sx={{ color: "#B36CF8" }} /> },
+  { label: 'Estadísticas', icon: <BarChartIcon sx={{ color: "#B36CF8" }} /> },
 ];
 
 interface SidebarTeacherSubjectProps {
