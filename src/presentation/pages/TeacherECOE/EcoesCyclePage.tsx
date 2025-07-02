@@ -124,7 +124,7 @@ const EcoesCyclePage: React.FC = () => {
                 </Typography>
             ) : (
                 <>
-                    <FormControl sx={{ minWidth: 220, mb: 3 }}>
+                    <FormControl sx={{ minWidth: 123, mb: 3 }}>
                         <InputLabel id="select-ecoe-label">Seleccione ECOE</InputLabel>
                         <Select
                             labelId="select-ecoe-label"
@@ -135,10 +135,15 @@ const EcoesCyclePage: React.FC = () => {
                                 const newEcoe = ecoes.find((e) => e.id === ecoeId) || null;
                                 setSelectedEcoe(newEcoe);
                             }}
+                            sx={{ textAlign: "center"}}
+                            renderValue={(selected) => {
+                                const ecoe = ecoes.find(e => e.id === selected);
+                                return ecoe ? `Año: ${ecoe.year} | Semestre: ${ecoe.semester}` : "";
+                            }}
                         >
                             {ecoes.map((ecoe) => (
-                                <MenuItem key={ecoe.id} value={ecoe.id}>
-                                    {ecoe.name}
+                                <MenuItem key={ecoe.id} value={ecoe.id} sx={{ justifyContent: "center", textAlign: "center" }}>
+                                    {`${ecoe.year}-${ecoe.semester}`}
                                 </MenuItem>
                             ))}
                         </Select>
