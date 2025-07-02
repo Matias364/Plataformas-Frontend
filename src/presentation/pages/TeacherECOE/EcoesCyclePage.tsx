@@ -10,8 +10,16 @@ import {
     FormControl,
     InputLabel,
     CircularProgress,
+    Modal,
+    Checkbox,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
 } from "@mui/material";
-import { getAvailableEcoes, fetchStudentsByEcoeId, Student } from "../../../infrastructure/services/EcoeService";
+import { getAvailableEcoes, fetchStudentsByEcoeId, getStudentsWithoutEcoe, Student } from "../../../infrastructure/services/EcoeService";
 import { Ecoe } from "../../../domain/ecoe/Ecoe";
 
 export const semesterLabelColor = (semester: number) => {
@@ -38,6 +46,12 @@ const EcoesCyclePage: React.FC = () => {
     const [selectedEcoe, setSelectedEcoe] = useState<Ecoe | null>(null);
     const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(false);
+    
+    // Estados para el modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [studentsWithoutEcoe, setStudentsWithoutEcoe] = useState<Student[]>([]);
+    const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
+    const [modalLoading, setModalLoading] = useState(false);
 
     useEffect(() => {
         if (!cycle) return;
@@ -82,6 +96,59 @@ const EcoesCyclePage: React.FC = () => {
 
         return () => clearTimeout(delay);
     }, [selectedEcoe]);
+
+    // Función para abrir el modal y cargar estudiantes sin ECOE
+    const handleOpenModal = async () => {
+        if (!cycle) return;
+        
+        setIsModalOpen(true);
+        setModalLoading(true);
+        
+        try {
+            const students = await getStudentsWithoutEcoe(cycle);
+            setStudentsWithoutEcoe(students);
+        } catch (error) {
+            console.error("Error al cargar estudiantes sin ECOE", error);
+            setStudentsWithoutEcoe([]);
+        } finally {
+            setModalLoading(false);
+        }
+    };
+
+    // Función para cerrar el modal
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedStudents(new Set());
+    };
+
+    // Función para manejar selección de estudiantes
+    const handleToggleStudent = (studentRut: string) => {
+        const newSelected = new Set(selectedStudents);
+        if (newSelected.has(studentRut)) {
+            newSelected.delete(studentRut);
+        } else {
+            newSelected.add(studentRut);
+        }
+        setSelectedStudents(newSelected);
+    };
+
+    // Función para seleccionar/deseleccionar todos
+    const handleToggleAll = () => {
+        if (selectedStudents.size === studentsWithoutEcoe.length) {
+            setSelectedStudents(new Set());
+        } else {
+            setSelectedStudents(new Set(studentsWithoutEcoe.map(s => s.rut)));
+        }
+    };
+
+    // Función para agregar estudiantes seleccionados
+    const handleAddSelectedStudents = () => {
+        // Aquí puedes implementar la lógica para agregar los estudiantes al ECOE
+        console.log("Estudiantes seleccionados:", Array.from(selectedStudents));
+        // Después de agregar, cerrar el modal y recargar la lista
+        handleCloseModal();
+        // Opcional: recargar la lista de estudiantes del ECOE actual
+    };
 
     if (!cycle) {
         return <Typography color="error">Ciclo no especificado</Typography>;
@@ -152,6 +219,7 @@ const EcoesCyclePage: React.FC = () => {
 
                         <Button
                             variant="contained"
+                            onClick={handleOpenModal}
                             sx={{
                                 borderRadius: 2,
                                 textTransform: "none",
@@ -211,6 +279,121 @@ const EcoesCyclePage: React.FC = () => {
                     )}
                 </>
             )}
+            
+            {/* Modal para agregar estudiantes */}
+            <Modal
+                open={isModalOpen}
+                onClose={handleCloseModal}
+                aria-labelledby="add-students-modal-title"
+                aria-describedby="add-students-modal-description"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '80%',
+                    maxWidth: 800,
+                    bgcolor: 'background.paper',
+                    borderRadius: 3,
+                    boxShadow: 24,
+                    p: 4,
+                    maxHeight: '80vh',
+                    overflow: 'auto'
+                }}>
+                    <Typography id="add-students-modal-title" variant="h5" fontWeight={700} sx={{ mb: 2 }}>
+                        Agregar estudiantes al ciclo {cycle}
+                    </Typography>
+                    
+                    {modalLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : (
+                        <>
+                            {studentsWithoutEcoe.length === 0 ? (
+                                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                                    No hay estudiantes disponibles para agregar a este ciclo.
+                                </Typography>
+                            ) : (
+                                <>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {studentsWithoutEcoe.length} estudiantes disponibles
+                                        </Typography>
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={handleToggleAll}
+                                            sx={{ textTransform: 'none' }}
+                                        >
+                                            {selectedStudents.size === studentsWithoutEcoe.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                                        </Button>
+                                    </Box>
+                                    
+                                    <TableContainer component={Paper} sx={{ maxHeight: 400, mb: 3 }}>
+                                        <Table stickyHeader size="small">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell padding="checkbox">
+                                                        <Checkbox
+                                                            indeterminate={selectedStudents.size > 0 && selectedStudents.size < studentsWithoutEcoe.length}
+                                                            checked={studentsWithoutEcoe.length > 0 && selectedStudents.size === studentsWithoutEcoe.length}
+                                                            onChange={handleToggleAll}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell sx={{ fontWeight: 600 }}>RUT</TableCell>
+                                                    <TableCell sx={{ fontWeight: 600 }}>Nombre</TableCell>
+                                                    <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {studentsWithoutEcoe.map((student) => (
+                                                    <TableRow key={student.rut} hover>
+                                                        <TableCell padding="checkbox">
+                                                            <Checkbox
+                                                                checked={selectedStudents.has(student.rut)}
+                                                                onChange={() => handleToggleStudent(student.rut)}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>{student.rut}</TableCell>
+                                                        <TableCell>{student.name}</TableCell>
+                                                        <TableCell>{student.email}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </>
+                            )}
+                            
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleCloseModal}
+                                    sx={{ textTransform: 'none' }}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleAddSelectedStudents}
+                                    disabled={selectedStudents.size === 0}
+                                    sx={{
+                                        textTransform: 'none',
+                                        bgcolor: primaryBlue,
+                                        '&:hover': {
+                                            bgcolor: primaryBlueHover,
+                                        },
+                                    }}
+                                >
+                                    Agregar {selectedStudents.size} estudiante{selectedStudents.size !== 1 ? 's' : ''}
+                                </Button>
+                            </Box>
+                        </>
+                    )}
+                </Box>
+            </Modal>
         </Box>
     );
 };
