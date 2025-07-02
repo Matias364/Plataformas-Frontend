@@ -8,7 +8,7 @@ import LifeDocument from './LifeDocument';
 import ECOEStatistics from './ECOEStatistics';
 import { logout } from '../../../utils/logout';
 import { useAuth } from '../../context/AuthContext';
-import { Course } from '../../../domain/course/Course';
+import { Subject } from '../../../domain/course/Subject';
 import { CourseService } from '../../../infrastructure/services/CourseService';
 
 interface Competency {
@@ -18,9 +18,9 @@ interface Competency {
 }
 
 interface DashboardContentProps {
-  courses: Course[];
-  selectedCourse: Course | null;
-  onCourseChange: (course: Course) => void;
+  subjects: Subject[];
+  selectedSubject: Subject | null;
+  onSubjectChange: (subject: Subject) => void;
   loading: boolean;
   error: string | null;
   competencies: Competency[];
@@ -28,7 +28,7 @@ interface DashboardContentProps {
   loadingCompetencies: boolean;
 }
 
-const DashboardContent = ({ courses, selectedCourse, onCourseChange, loading, error, competencies, subjectDescription, loadingCompetencies }: DashboardContentProps) => (
+const DashboardContent = ({ subjects, selectedSubject, onSubjectChange, loading, error, competencies, subjectDescription, loadingCompetencies }: DashboardContentProps) => (
   <Box sx={{ p: { xs: 0, md: 0, marginTop: 32 }, width: '100%' }}>
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
       <Box>
@@ -52,10 +52,10 @@ const DashboardContent = ({ courses, selectedCourse, onCourseChange, loading, er
         <TextField
           select
           size="small"
-          value={selectedCourse?.id?.toString() || ''}
+          value={selectedSubject?.id?.toString() || ''}
           onChange={(e) => {
-            const course = courses.find(c => c.id.toString() === e.target.value);
-            if (course) onCourseChange(course);
+            const subject = subjects.find(s => s.id.toString() === e.target.value);
+            if (subject) onSubjectChange(subject);
           }}
           sx={{
             minWidth: 240,
@@ -69,16 +69,16 @@ const DashboardContent = ({ courses, selectedCourse, onCourseChange, loading, er
           SelectProps={{
             native: true,
           }}
-          disabled={courses.length === 0}
+          disabled={subjects.length === 0}
         >
-          {courses.length === 0 ? (
+          {subjects.length === 0 ? (
             <option value="">No hay asignaturas asignadas</option>
           ) : (
             <>
               <option value="">Seleccione una asignatura</option>
-              {courses.map((course) => (
-                <option key={course.id} value={course.id.toString()}>
-                  {course.code} - {course.name}
+              {subjects.map((subject) => (
+                <option key={subject.id} value={subject.id.toString()}>
+                  {subject.code} - {subject.name} (Semestre {subject.semester})
                 </option>
               ))}
             </>
@@ -87,7 +87,7 @@ const DashboardContent = ({ courses, selectedCourse, onCourseChange, loading, er
       )}
     </Box>
 
-    {selectedCourse && (
+    {selectedSubject && (
       <Card
         variant="outlined"
         sx={{
@@ -142,7 +142,7 @@ const DashboardContent = ({ courses, selectedCourse, onCourseChange, loading, er
       </Card>
     )}
 
-    {!selectedCourse && !loading && !error && courses.length > 0 && (
+    {!selectedSubject && !loading && !error && subjects.length > 0 && (
       <Card
         variant="outlined"
         sx={{
@@ -168,8 +168,8 @@ const DashboardContent = ({ courses, selectedCourse, onCourseChange, loading, er
 
 const TeacherSubjectDashboard = () => {
   const [selected, setSelected] = useState(0);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [competencies, setCompetencies] = useState<Competency[]>([]);
@@ -197,12 +197,14 @@ const TeacherSubjectDashboard = () => {
         }
 
         // Cargar las asignaturas del docente
-        const teacherCourses = await courseService.getSubjectTeacher();
-        setCourses(teacherCourses);
+        const teacherSubjects = await courseService.getSubjectTeacher();
+        console.log('Teacher subjects data:', teacherSubjects);
+        setSubjects(teacherSubjects);
         
         // Seleccionar automáticamente la primera asignatura si existe
-        if (teacherCourses.length > 0) {
-          setSelectedCourse(teacherCourses[0]);
+        if (teacherSubjects.length > 0) {
+          console.log('First subject structure:', teacherSubjects[0]);
+          setSelectedSubject(teacherSubjects[0]);
         }
 
       } catch (err) {
@@ -218,15 +220,16 @@ const TeacherSubjectDashboard = () => {
 
   useEffect(() => {
     const fetchCompetencies = async () => {
-      if (!selectedCourse) {
+      if (!selectedSubject) {
         setCompetencies([]);
         setSubjectDescription('');
         return;
       }
       setLoadingCompetencies(true);
       try {
-        setSubjectDescription(selectedCourse.description || '');
-        const data = await courseService.getSubjectCompetencies(selectedCourse.id);
+        setSubjectDescription(`${selectedSubject.code} - ${selectedSubject.name} (Semestre ${selectedSubject.semester})`);
+        // Usar subject.id para obtener las competencias del subject
+        const data = await courseService.getSubjectCompetencies(selectedSubject.id.toString());
         // El JSON es un array de objetos con propiedad competency
         setCompetencies((Array.isArray(data) ? data : []).map((item: any) => ({
           id: item.competency?.id || item.competency?._id || item.id || item._id,
@@ -240,10 +243,10 @@ const TeacherSubjectDashboard = () => {
       }
     };
     fetchCompetencies();
-  }, [selectedCourse]);
+  }, [selectedSubject]);
 
-  const handleCourseChange = (course: Course) => {
-    setSelectedCourse(course);
+  const handleSubjectChange = (subject: Subject) => {
+    setSelectedSubject(subject);
     setCompetencies([]); // Limpiar competencias al cambiar
     setSubjectDescription(''); // Limpiar descripción al cambiar
   };
@@ -253,9 +256,9 @@ const TeacherSubjectDashboard = () => {
       case 0:
         return (
           <DashboardContent
-            courses={courses}
-            selectedCourse={selectedCourse}
-            onCourseChange={handleCourseChange}
+            subjects={subjects}
+            selectedSubject={selectedSubject}
+            onSubjectChange={handleSubjectChange}
             loading={loading}
             error={error}
             competencies={competencies}
@@ -274,9 +277,9 @@ const TeacherSubjectDashboard = () => {
       default:
         return (
           <DashboardContent 
-            courses={courses}
-            selectedCourse={selectedCourse}
-            onCourseChange={handleCourseChange}
+            subjects={subjects}
+            selectedSubject={selectedSubject}
+            onSubjectChange={handleSubjectChange}
             loading={loading}
             error={error}
             competencies={competencies}
@@ -297,7 +300,7 @@ const TeacherSubjectDashboard = () => {
   }
 
   // Mostrar error si no tiene permisos
-  if (error && !courses.length && user?.role !== 'docente_asignatura') {
+  if (error && !subjects.length && user?.role !== 'docente_asignatura') {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', p: 3 }}>
         <Alert severity="error" sx={{ maxWidth: 500 }}>
