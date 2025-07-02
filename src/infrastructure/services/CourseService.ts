@@ -1,12 +1,13 @@
 import { ICourseService } from '../../application/course/ICourseService';
 import { Course } from '../../domain/course/Course';
+import { Subject } from '../../domain/course/Subject';
 import { readFromStorage } from '../../storage/storage';
 import axios from 'axios';
 
 export class CourseService implements ICourseService {
   private readonly baseUrl = 'http://localhost:3001/api/v1';
 
-  async getSubjectTeacher(): Promise<Course[]> {
+  async getSubjectTeacher(): Promise<Subject[]> {
     try {
       const accessToken = readFromStorage('access_token');
       console.log('Access Token:', accessToken);
@@ -26,10 +27,10 @@ export class CourseService implements ICourseService {
       if (response.status === 200) {
         return response.data || [];
       } else {
-        throw new Error('Failed to fetch teacher courses');
+        throw new Error('Failed to fetch teacher subjects');
       }
     } catch (error) {
-      console.error('Error fetching teacher courses:', error);
+      console.error('Error fetching teacher subjects:', error);
       throw error;
     }
   }
