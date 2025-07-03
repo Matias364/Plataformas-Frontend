@@ -19,7 +19,7 @@ import {
     TableHead,
     TableRow,
 } from "@mui/material";
-import { getAvailableEcoes, fetchStudentsByEcoeId, getStudentsWithoutEcoe, addStudentToEcoe, Student } from "../../../infrastructure/services/EcoeService";
+import { getAvailableEcoes, fetchStudentsByEcoeId, getStudentsWithoutEcoe, addStudentToEcoe, removeStudentFromEcoe, Student } from "../../../infrastructure/services/EcoeService";
 import { Ecoe } from "../../../domain/ecoe/Ecoe";
 
 export const semesterLabelColor = (semester: number) => {
@@ -53,6 +53,7 @@ const EcoesCyclePage: React.FC = () => {
     const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
     const [modalLoading, setModalLoading] = useState(false);
     const [addingStudents, setAddingStudents] = useState(false);
+    const [removingStudentId, setRemovingStudentId] = useState<number | null>(null);
 
     useEffect(() => {
         if (!cycle) return;
@@ -182,6 +183,34 @@ const EcoesCyclePage: React.FC = () => {
         }
     };
 
+    // Función para eliminar un estudiante del ECOE
+    const handleRemoveStudent = async (student: Student) => {
+        if (!student.ecoeStudentId) {
+            console.error("No se puede eliminar: ecoeStudentId no disponible");
+            return;
+        }
+
+        setRemovingStudentId(student.ecoeStudentId);
+
+        try {
+            await removeStudentFromEcoe(student.ecoeStudentId);
+            
+            console.log(`Estudiante ${student.name} eliminado exitosamente del ECOE`);
+            
+            // Recargar la lista de estudiantes del ECOE actual
+            if (selectedEcoe) {
+                const updatedStudents = await fetchStudentsByEcoeId(selectedEcoe.id);
+                setStudents(updatedStudents);
+            }
+            
+        } catch (error) {
+            console.error("Error al eliminar estudiante del ECOE:", error);
+            // Aquí podrías mostrar un mensaje de error al usuario
+        } finally {
+            setRemovingStudentId(null);
+        }
+    };
+
     if (!cycle) {
         return <Typography color="error">Ciclo no especificado</Typography>;
     }
@@ -289,10 +318,11 @@ const EcoesCyclePage: React.FC = () => {
                                     <table style={{ width: "100%", borderCollapse: "collapse" }}>
                                     <thead>
                                         <tr style={{ background: "#fff" }}>
-                                            <th style={{ textAlign: "left", padding: 8, color: "#888" }}>Rut</th>
+                                            <th style={{ textAlign: "left", padding: 8, color: "#888" }}>RUT</th>
                                             <th style={{ textAlign: "left", padding: 8, color: "#888" }}>Nombre</th>
                                             <th style={{ textAlign: "left", padding: 8, color: "#888" }}>Correo electrónico</th>
-                                            <th style={{ textAlign: "left", padding: 8, color: "#888" }}>Calificación</th>
+                                            <th style={{ textAlign: "center", padding: 8, color: "#888" }}>Calificaciones</th>
+                                            <th style={{ textAlign: "center", padding: 8, color: "#888" }}>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -303,7 +333,74 @@ const EcoesCyclePage: React.FC = () => {
                                                     <td style={{ padding: 8 }}>{s.rut}</td>
                                                     <td style={{ padding: 8 }}>{s.name}</td>
                                                     <td style={{ padding: 8 }}>{s.email}</td>
-                                                    <td style={{ padding: 8 }}>{s.grade > 0 ? s.grade.toFixed(1) : "N/A"}</td>
+                                                    <td style={{ padding: 8, textAlign: "center" }}>
+                                                        {s.grade > 0 ? (
+                                                            <Box sx={{ 
+                                                                display: "inline-flex", 
+                                                                alignItems: "center", 
+                                                                bgcolor: s.grade >= 4 ? "#dcfce7" : "#fef2f2", 
+                                                                color: s.grade >= 4 ? "#166534" : "#dc2626",
+                                                                px: 2,
+                                                                py: 0.5,
+                                                                borderRadius: 2,
+                                                                fontWeight: 600,
+                                                                fontSize: "0.875rem"
+                                                            }}>
+                                                                {s.grade.toFixed(1)}
+                                                            </Box>
+                                                        ) : (
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                Sin calificar
+                                                            </Typography>
+                                                        )}
+                                                    </td>
+                                                    <td style={{ padding: 8, textAlign: "center" }}>
+                                                        <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                                                            <Button
+                                                                variant="outlined"
+                                                                size="small"
+                                                                sx={{
+                                                                    textTransform: "none",
+                                                                    fontSize: "0.75rem",
+                                                                    minWidth: "auto",
+                                                                    px: 1.5,
+                                                                    py: 0.5,
+                                                                    borderColor: primaryBlue,
+                                                                    color: primaryBlue,
+                                                                    "&:hover": {
+                                                                        bgcolor: primaryBlue,
+                                                                        color: "white",
+                                                                    }
+                                                                }}
+                                                                onClick={() => {
+                                                                    // TODO: Implementar evaluación de competencias
+                                                                    console.log("Evaluar competencias del estudiante:", s.id || s.rut);
+                                                                }}
+                                                            >
+                                                                Evaluar
+                                                            </Button>
+                                                            <Button
+                                                                variant="outlined"
+                                                                size="small"
+                                                                color="error"
+                                                                disabled={removingStudentId === s.ecoeStudentId}
+                                                                sx={{
+                                                                    textTransform: "none",
+                                                                    fontSize: "0.75rem",
+                                                                    minWidth: "auto",
+                                                                    px: 1.5,
+                                                                    py: 0.5,
+                                                                }}
+                                                                onClick={() => handleRemoveStudent(s)}
+                                                            >
+                                                                {removingStudentId === s.ecoeStudentId ? (
+                                                                    <CircularProgress size={12} color="inherit" />
+                                                                ) : (
+                                                                    'Eliminar'
+                                                                )}
+                                                            </Button>
+                                                        </Box>
+                                                    </td>
                                                 </tr>
                                             );
                                         })}
