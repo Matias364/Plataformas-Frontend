@@ -9,6 +9,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 interface SidebarTeacherProps {
   name: string;
@@ -52,6 +53,15 @@ const SidebarTeacherECOE: React.FC<SidebarTeacherProps> = ({ name, role, onLogou
             <HomeIcon color="primary" />
           </ListItemIcon>
           {!collapsed && <ListItemText primary="Gestionar ECOE" />}
+        </ListItemButton>
+        <ListItemButton
+          selected={location.pathname.startsWith("/docente-ecoe/estadisticas")}
+          onClick={() => navigate('/docente-ecoe/estadisticas')}
+        >
+          <ListItemIcon>
+            <BarChartIcon sx={{ color: "#B36CF8" }} />
+          </ListItemIcon>
+          {!collapsed && <ListItemText primary="Estadísticas" />}
         </ListItemButton>
       </List>
 
