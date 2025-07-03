@@ -29,10 +29,20 @@ export const getAvailableEcoes = async (cycle: string): Promise<Ecoe[]> => {
     }
 };
 
+export const getStudentsByEcoeId = async (ecoeId: number): Promise<any[]> => {
+    try {
+        const response = await axios.get(`${API_URL}/ecoes/${ecoeId}/students`);
+        return response.data;
+    } catch (error) {
+        console.error("Error al obtener estudiantes y competencias del ECOE", error);
+        throw new Error("No se pudieron obtener los estudiantes y competencias del ECOE");
+    }
+};
+
 export const fetchStudentsByEcoeId = async (ecoeId: number): Promise<Student[]> => {
     try {
         // El endpoint devuelve el formato complejo con competencias
-        const response = await axios.get(`http://localhost:3002/api/v1/ecoes/${ecoeId}/students`);
+        const response = await axios.get(`${API_URL}/ecoes/${ecoeId}/students`);
         const studentsEcoeData = response.data;
         
         // Transformamos cada elemento al formato Student usando Promise.all para obtener info adicional
