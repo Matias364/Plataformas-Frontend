@@ -10,11 +10,20 @@ import EcoeLayout from './presentation/pages/TeacherECOE/EcoeLayout';
 import EcoeCycleSelectorPage from './presentation/pages/TeacherECOE/EcoeCycleSelector';
 import EcoesCyclePage from './presentation/pages/TeacherECOE/EcoesCyclePage';
 import ECOEStatisticsV2 from './presentation/pages/TeacherECOE/ECOEStatisticsV2';
+import ProgramDirectorMainLayout from './presentation/pages/ProgramDirector/ProgramDirectorMainLayout';
 
 function App() {
     return (
         <Routes>
             <Route path="/" element={<LoginPage />} />
+            <Route
+                path="/director-programa/*"
+                element={
+                    <ProtectedRoute allowedRoles={['jefatura', 'docente_asignatura']}>
+                        <ProgramDirectorMainLayout />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/docente-ecoe/*"
                 element={
