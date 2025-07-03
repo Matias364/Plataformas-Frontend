@@ -19,7 +19,7 @@ function App() {
             <Route
                 path="/director-programa/*"
                 element={
-                    <ProtectedRoute allowedRoles={['jefatura', 'docente_asignatura']}>
+                    <ProtectedRoute allowedRoles={['jefatura']}>
                         <ProgramDirectorMainLayout />
                     </ProtectedRoute>
                 }
