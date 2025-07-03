@@ -11,6 +11,12 @@ export interface Student {
     grade: number;
 }
 
+export interface Competency {
+    id: number;
+    name: string;
+    description: string;
+}
+
 const API_URL = import.meta.env.VITE_BACKEND_ECOE_URL;
 
 export const getAvailableEcoes = async (cycle: string): Promise<Ecoe[]> => {
@@ -205,6 +211,98 @@ export const removeStudentFromEcoe = async (ecoeStudentId: number): Promise<void
             console.error("Response headers:", error.response.headers);
             
             // Intentar mostrar el mensaje de error específico del servidor
+            const errorMessage = error.response.data?.message || error.response.data?.error || "Error desconocido del servidor";
+            throw new Error(`Error ${error.response.status}: ${errorMessage}`);
+        } else if (error.request) {
+            console.error("Request error:", error.request);
+            throw new Error("No se pudo conectar con el servidor");
+        } else {
+            console.error("Error:", error.message);
+            throw new Error(error.message || "Error desconocido");
+        }
+    }
+};
+
+export const getCompetencies = async (): Promise<Competency[]> => {
+    try {
+        console.log("Obteniendo competencias...");
+        
+        const response = await axios.get<Competency[]>(`http://localhost:3002/api/v1/competencies`, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.status !== 200) {
+            throw new Error("Error al obtener competencias");
+        }
+        
+        console.log("Competencias obtenidas exitosamente:", response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error("Error al obtener competencias", error);
+        
+        if (error.response) {
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+            console.error("Response headers:", error.response.headers);
+            
+            // Intentar mostrar el mensaje de error específico del servidor
+            const errorMessage = error.response.data?.message || error.response.data?.error || "Error desconocido del servidor";
+            throw new Error(`Error ${error.response.status}: ${errorMessage}`);
+        } else if (error.request) {
+            console.error("Request error:", error.request);
+            throw new Error("No se pudo conectar con el servidor");
+        } else {
+            console.error("Error:", error.message);
+            throw new Error(error.message || "Error desconocido");
+        }
+    }
+};
+
+export const evaluateStudentCompetency = async (ecoeStudentId: number, competencyId: number, grade: number): Promise<void> => {
+    try {
+        // Verificar los valores que se están enviando
+        console.log("=== DATOS PARA EVALUACIÓN ===");
+        console.log("ecoeStudentId:", ecoeStudentId, "tipo:", typeof ecoeStudentId);
+        console.log("competencyId:", competencyId, "tipo:", typeof competencyId);
+        console.log("grade:", grade, "tipo:", typeof grade);
+        
+        // Validar que los valores no sean null, undefined o NaN
+        if (ecoeStudentId == null || isNaN(ecoeStudentId)) {
+            throw new Error(`ecoeStudentId inválido: ${ecoeStudentId}`);
+        }
+        if (competencyId == null || isNaN(competencyId)) {
+            throw new Error(`competencyId inválido: ${competencyId}`);
+        }
+        if (grade == null || isNaN(grade)) {
+            throw new Error(`grade inválido: ${grade}`);
+        }
+        
+        const requestBody = {
+            ecoeStudentId,
+            competencyId,
+            grade
+        };
+        
+        console.log("Request body que se enviará:", JSON.stringify(requestBody, null, 2));
+        
+        const response = await axios.post(`http://localhost:3002/api/v1/ecoes/evaluate-student-competency`, requestBody, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status !== 200 && response.status !== 201) {
+            throw new Error("Error al evaluar la competencia del estudiante");
+        }
+        console.log("Evaluación de competencia registrada exitosamente:", response.data);
+    } catch (error: any) {
+        console.error("Error al evaluar la competencia del estudiante", error);
+        if (error.response) {
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+            console.error("Response headers:", error.response.headers);
             const errorMessage = error.response.data?.message || error.response.data?.error || "Error desconocido del servidor";
             throw new Error(`Error ${error.response.status}: ${errorMessage}`);
         } else if (error.request) {
