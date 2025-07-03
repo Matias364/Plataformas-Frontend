@@ -2,7 +2,7 @@ import { Box, Typography, Card, FormControl, InputLabel, Select, MenuItem, Circu
 import { useState, useEffect } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend } from 'chart.js';
-import { getAvailableEcoes, fetchStudentsByEcoeId, Student } from '../../../infrastructure/services/EcoeService';
+import { getAvailableEcoes, fetchStudentsByEcoeId, Student, getStudentsByEcoeId } from '../../../infrastructure/services/EcoeService';
 import { Ecoe } from '../../../domain/ecoe/Ecoe';
 
 Chart.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend);
@@ -21,6 +21,7 @@ const ECOEStatisticsV2 = () => {
   const [ecoes, setEcoes] = useState<Ecoe[]>([]);
   const [selectedType, setSelectedType] = useState('');
   const [selectedEcoe, setSelectedEcoe] = useState<Ecoe | null>(null);
+  const [competencyAverages, setCompetencyAverages] = useState<{ name: string; average: number }[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingEcoes, setLoadingEcoes] = useState(true);
   const [loadingStudents, setLoadingStudents] = useState(false);
@@ -76,6 +77,40 @@ const ECOEStatisticsV2 = () => {
     fetchStudents();
     // eslint-disable-next-line
   }, [selectedEcoe]);
+
+  //Cargar promedios de competencias
+  useEffect(() => {
+    if (!selectedEcoe) {
+      setCompetencyAverages([]);
+      return;
+    }
+    const fetchCompetencyAverages = async () => {
+        try {
+            const studentEcoeData = await getStudentsByEcoeId(selectedEcoe.id);
+            // Calcular promedios por competencia
+            const competencyMap: { [name: string]: number[] } = {};
+            studentEcoeData.forEach((student: any) => {
+                (student.competenciesEvaluated || []).forEach((competency: any) => {
+                    if (!competencyMap[competency.competencyName]) {
+                        competencyMap[competency.competencyName] = [];
+                    }
+                    if (typeof competency.grade === 'number' && competency.grade > 0) {
+                        competencyMap[competency.competencyName].push(competency.grade);
+                    }
+                });
+            });
+            const averages = Object.entries(competencyMap).map(([name, grades]) => ({
+                name,
+                average: grades.length > 0 ? Number((grades.reduce((sum, grade) => sum + grade, 0) / grades.length).toFixed(2)) : 0
+            }));
+            setCompetencyAverages(averages);
+        } catch (error) {
+            console.error('Error al cargar promedios de competencias:', error);
+            setCompetencyAverages([]);
+        }
+    };
+    fetchCompetencyAverages();
+}, [selectedEcoe]);
 
   // Calcular estadísticas
   const calculateStatistics = (studentsData: Student[]) => {
@@ -164,20 +199,22 @@ const ECOEStatisticsV2 = () => {
   };
 
   const getAverageChart = () => {
-    if (!statisticsData) return null;
-    const approvalRate = (statisticsData.approvedStudents / statisticsData.totalStudents) * 100;
-    const failureRate = (statisticsData.failedStudents / statisticsData.totalStudents) * 100;
-    const notEvaluatedRate = (statisticsData.notEvaluatedStudents / statisticsData.totalStudents) * 100;
+    if (!competencyAverages.length) return null;
+    // Colores según promedio
+    const getColor = (avg: number) => {
+        if (avg >= 5.5) return '#4CAF50'; // Satisfactorio
+        if (avg >= 4.0) return '#FFC107'; // Suficiente
+        return '#F44336'; // Insuficiente
+    };
     return {
-      labels: ['Tasa de Aprobación', 'Tasa de Reprobación', 'Sin Evaluar'],
-      datasets: [{
-        label: 'Porcentaje',
-        data: [approvalRate, failureRate, notEvaluatedRate],
-        backgroundColor: ['#4CAF50', '#F44336', '#9E9E9E'],
-        borderColor: ['#388E3C', '#D32F2F', '#757575'],
-        borderWidth: 2,
-        tension: 0.4
-      }]
+        labels: competencyAverages.map(item => item.name),
+        datasets: [{
+            label: 'Promedio por Competencia',
+            data: competencyAverages.map(item => item.average),
+            backgroundColor: competencyAverages.map(item => getColor(item.average)),
+            borderWidth: 1,
+            borderRadius: 8,
+        }]
     };
   };
 
@@ -414,7 +451,7 @@ const ECOEStatisticsV2 = () => {
                 Tasas de Rendimiento Académico
               </Typography>
               <Typography color="text.secondary" fontSize={15} mb={3}>
-                Porcentajes de aprobación, reprobación y estudiantes sin evaluar
+                Rendimiento promedio por competencia evaluada en ECOE
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
                 <Box sx={{ width: '100%', maxWidth: 600, height: 400 }}>
@@ -430,7 +467,7 @@ const ECOEStatisticsV2 = () => {
                             callbacks: {
                               label: (context) => {
                                 const value = context.parsed.y;
-                                return `${context.label}: ${value.toFixed(1)}%`;
+                                return `Nota promedio: ${value.toFixed(1)}`;
                               }
                             }
                           }
@@ -438,9 +475,10 @@ const ECOEStatisticsV2 = () => {
                         scales: { 
                           y: { 
                             beginAtZero: true,
-                            max: 100,
+                            max: 7,
                             ticks: {
-                              callback: (value) => `${value}%`
+                                stepSize: 1,
+                                callback: (value) => Number(value) === 0 ? '0' : Number(value).toFixed(1),
                             }
                           } 
                         },
