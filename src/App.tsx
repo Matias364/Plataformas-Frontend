@@ -9,22 +9,24 @@ import TeacherSubjectDashboard from './presentation/pages/TeacherSubject/Teacher
 import EcoeLayout from './presentation/pages/TeacherECOE/EcoeLayout';
 import EcoeCycleSelectorPage from './presentation/pages/TeacherECOE/EcoeCycleSelector';
 import EcoesCyclePage from './presentation/pages/TeacherECOE/EcoesCyclePage';
+import ECOEStatisticsV2 from './presentation/pages/TeacherECOE/ECOEStatisticsV2';
 
 function App() {
     return (
         <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route
-                path="/docente-ecoe/ecoes/*"
+                path="/docente-ecoe/*"
                 element={
                     <ProtectedRoute allowedRoles={['docente_ecoe']}>
                         <EcoeLayout />
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<EcoeCycleSelectorPage />} />
+                <Route path="ecoes" element={<EcoeCycleSelectorPage />} />
                 {/* Rutas hijas anidadas bajo /docente-ecoe/ecoes/ */}
-                <Route path=":cycle" element={<EcoesCyclePage />} />
+                <Route path="ecoes/:cycle" element={<EcoesCyclePage />} />
+                <Route path="estadisticas" element={<ECOEStatisticsV2 />} />
             </Route>
             <Route
                 path='/docente-asignatura'
