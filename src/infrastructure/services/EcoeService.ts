@@ -4,6 +4,7 @@ import { EcoeYear } from '../../domain/ecoe/EcoeYear';
 
 export interface Student {
     id?: string; // ID interno del estudiante
+    ecoeStudentId?: number; // ID de la relación ecoe-student para eliminación
     rut: string;
     name: string;
     email: string;
@@ -25,7 +26,7 @@ export const getAvailableEcoes = async (cycle: string): Promise<Ecoe[]> => {
 export const fetchStudentsByEcoeId = async (ecoeId: number): Promise<Student[]> => {
     try {
         // El endpoint devuelve el formato complejo con competencias
-        const response = await axios.get(`${API_URL}/ecoes/${ecoeId}/students`);
+        const response = await axios.get(`http://localhost:3002/api/v1/ecoes/${ecoeId}/students`);
         const studentsEcoeData = response.data;
         
         // Transformamos cada elemento al formato Student usando Promise.all para obtener info adicional
@@ -38,6 +39,7 @@ export const fetchStudentsByEcoeId = async (ecoeId: number): Promise<Student[]> 
                     
                     return {
                         id: studentEcoeResult.studentId,
+                        ecoeStudentId: studentEcoeResult.id, // ID de la relación ecoe-student
                         rut: studentInfo.rut || studentEcoeResult.studentId,
                         name: studentInfo.fullname || 'Nombre no disponible',
                         email: studentInfo.email || 'Email no disponible',
@@ -48,6 +50,7 @@ export const fetchStudentsByEcoeId = async (ecoeId: number): Promise<Student[]> 
                     // Fallback con información básica
                     return {
                         id: studentEcoeResult.studentId,
+                        ecoeStudentId: studentEcoeResult.id, // ID de la relación ecoe-student
                         rut: studentEcoeResult.studentId,
                         name: 'Información no disponible',
                         email: 'No disponible',
@@ -159,6 +162,42 @@ export const addStudentToEcoe = async (studentId: string, ecoeId: string): Promi
         console.log("Estudiante agregado exitosamente:", response.data);
     } catch (error: any) {
         console.error("Error al agregar estudiante al ECOE", error);
+        
+        if (error.response) {
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+            console.error("Response headers:", error.response.headers);
+            
+            // Intentar mostrar el mensaje de error específico del servidor
+            const errorMessage = error.response.data?.message || error.response.data?.error || "Error desconocido del servidor";
+            throw new Error(`Error ${error.response.status}: ${errorMessage}`);
+        } else if (error.request) {
+            console.error("Request error:", error.request);
+            throw new Error("No se pudo conectar con el servidor");
+        } else {
+            console.error("Error:", error.message);
+            throw new Error(error.message || "Error desconocido");
+        }
+    }
+};
+
+export const removeStudentFromEcoe = async (ecoeStudentId: number): Promise<void> => {
+    try {
+        console.log("Eliminando estudiante del ECOE, ID:", ecoeStudentId);
+        
+        const response = await axios.delete(`http://localhost:3002/api/v1/ecoes/ecoe-student/${ecoeStudentId}`, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.status !== 200 && response.status !== 204) {
+            throw new Error("Error al eliminar estudiante del ECOE");
+        }
+        
+        console.log("Estudiante eliminado exitosamente del ECOE");
+    } catch (error: any) {
+        console.error("Error al eliminar estudiante del ECOE", error);
         
         if (error.response) {
             console.error("Response data:", error.response.data);
