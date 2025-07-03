@@ -19,7 +19,7 @@ import {
     TableHead,
     TableRow,
 } from "@mui/material";
-import { getAvailableEcoes, fetchStudentsByEcoeId, getStudentsWithoutEcoe, Student } from "../../../infrastructure/services/EcoeService";
+import { getAvailableEcoes, fetchStudentsByEcoeId, getStudentsWithoutEcoe, addStudentToEcoe, Student } from "../../../infrastructure/services/EcoeService";
 import { Ecoe } from "../../../domain/ecoe/Ecoe";
 
 export const semesterLabelColor = (semester: number) => {
@@ -52,6 +52,7 @@ const EcoesCyclePage: React.FC = () => {
     const [studentsWithoutEcoe, setStudentsWithoutEcoe] = useState<Student[]>([]);
     const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
     const [modalLoading, setModalLoading] = useState(false);
+    const [addingStudents, setAddingStudents] = useState(false);
 
     useEffect(() => {
         if (!cycle) return;
@@ -122,12 +123,12 @@ const EcoesCyclePage: React.FC = () => {
     };
 
     // Función para manejar selección de estudiantes
-    const handleToggleStudent = (studentRut: string) => {
+    const handleToggleStudent = (studentId: string) => {
         const newSelected = new Set(selectedStudents);
-        if (newSelected.has(studentRut)) {
-            newSelected.delete(studentRut);
+        if (newSelected.has(studentId)) {
+            newSelected.delete(studentId);
         } else {
-            newSelected.add(studentRut);
+            newSelected.add(studentId);
         }
         setSelectedStudents(newSelected);
     };
@@ -137,17 +138,48 @@ const EcoesCyclePage: React.FC = () => {
         if (selectedStudents.size === studentsWithoutEcoe.length) {
             setSelectedStudents(new Set());
         } else {
-            setSelectedStudents(new Set(studentsWithoutEcoe.map(s => s.rut)));
+            setSelectedStudents(new Set(studentsWithoutEcoe.map(s => s.id || s.rut)));
         }
     };
 
     // Función para agregar estudiantes seleccionados
-    const handleAddSelectedStudents = () => {
-        // Aquí puedes implementar la lógica para agregar los estudiantes al ECOE
-        console.log("Estudiantes seleccionados:", Array.from(selectedStudents));
-        // Después de agregar, cerrar el modal y recargar la lista
-        handleCloseModal();
-        // Opcional: recargar la lista de estudiantes del ECOE actual
+    const handleAddSelectedStudents = async () => {
+        if (!selectedEcoe || selectedStudents.size === 0) return;
+        
+        setAddingStudents(true);
+        
+        try {
+            // Obtener los IDs de los estudiantes seleccionados
+            const selectedStudentData = studentsWithoutEcoe.filter(student => 
+                selectedStudents.has(student.id || student.rut)
+            );
+            
+            // Agregar cada estudiante al ECOE seleccionado
+            const addPromises = selectedStudentData.map(student => {
+                // Usar el ID del estudiante (no el RUT)
+                const studentId = student.id || student.rut;
+                return addStudentToEcoe(studentId, selectedEcoe.id.toString());
+            });
+            
+            await Promise.all(addPromises);
+            
+            console.log(`${selectedStudents.size} estudiantes agregados exitosamente al ECOE`);
+            
+            // Cerrar el modal y limpiar selecciones
+            handleCloseModal();
+            
+            // Recargar la lista de estudiantes del ECOE actual
+            if (selectedEcoe) {
+                const updatedStudents = await fetchStudentsByEcoeId(selectedEcoe.id);
+                setStudents(updatedStudents);
+            }
+            
+        } catch (error) {
+            console.error("Error al agregar estudiantes al ECOE:", error);
+            // Aquí podrías mostrar un mensaje de error al usuario
+        } finally {
+            setAddingStudents(false);
+        }
     };
 
     if (!cycle) {
@@ -264,14 +296,17 @@ const EcoesCyclePage: React.FC = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {students.map((s) => (
-                                            <tr key={s.rut} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                                                <td style={{ padding: 8 }}>{s.rut}</td>
-                                                <td style={{ padding: 8 }}>{s.name}</td>
-                                                <td style={{ padding: 8 }}>{s.email}</td>
-                                                <td style={{ padding: 8 }}>{s.grade > 0 ? s.grade.toFixed(1) : "N/A"}</td>
-                                            </tr>
-                                        ))}
+                                        {students.map((s) => {
+                                            const studentKey = s.id || s.rut;
+                                            return (
+                                                <tr key={studentKey} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                                                    <td style={{ padding: 8 }}>{s.rut}</td>
+                                                    <td style={{ padding: 8 }}>{s.name}</td>
+                                                    <td style={{ padding: 8 }}>{s.email}</td>
+                                                    <td style={{ padding: 8 }}>{s.grade > 0 ? s.grade.toFixed(1) : "N/A"}</td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </Paper>
@@ -348,19 +383,22 @@ const EcoesCyclePage: React.FC = () => {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {studentsWithoutEcoe.map((student) => (
-                                                    <TableRow key={student.rut} hover>
-                                                        <TableCell padding="checkbox">
-                                                            <Checkbox
-                                                                checked={selectedStudents.has(student.rut)}
-                                                                onChange={() => handleToggleStudent(student.rut)}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>{student.rut}</TableCell>
-                                                        <TableCell>{student.name}</TableCell>
-                                                        <TableCell>{student.email}</TableCell>
-                                                    </TableRow>
-                                                ))}
+                                                {studentsWithoutEcoe.map((student) => {
+                                                    const studentKey = student.id || student.rut;
+                                                    return (
+                                                        <TableRow key={studentKey} hover>
+                                                            <TableCell padding="checkbox">
+                                                                <Checkbox
+                                                                    checked={selectedStudents.has(studentKey)}
+                                                                    onChange={() => handleToggleStudent(studentKey)}
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell>{student.rut}</TableCell>
+                                                            <TableCell>{student.name}</TableCell>
+                                                            <TableCell>{student.email}</TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
                                             </TableBody>
                                         </Table>
                                     </TableContainer>
@@ -378,7 +416,7 @@ const EcoesCyclePage: React.FC = () => {
                                 <Button
                                     variant="contained"
                                     onClick={handleAddSelectedStudents}
-                                    disabled={selectedStudents.size === 0}
+                                    disabled={selectedStudents.size === 0 || addingStudents}
                                     sx={{
                                         textTransform: 'none',
                                         bgcolor: primaryBlue,
@@ -387,7 +425,13 @@ const EcoesCyclePage: React.FC = () => {
                                         },
                                     }}
                                 >
-                                    Agregar {selectedStudents.size} estudiante{selectedStudents.size !== 1 ? 's' : ''}
+                                    {addingStudents ? (
+                                        <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                                    ) : null}
+                                    {addingStudents 
+                                        ? 'Agregando...' 
+                                        : `Agregar ${selectedStudents.size} estudiante${selectedStudents.size !== 1 ? 's' : ''}`
+                                    }
                                 </Button>
                             </Box>
                         </>
