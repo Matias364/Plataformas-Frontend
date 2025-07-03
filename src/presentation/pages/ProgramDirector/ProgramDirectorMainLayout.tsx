@@ -7,6 +7,7 @@ import { GoogleAuthService } from '../../../infrastructure/services/GoogleAuthSe
 import ProgramDirectorStudents from './ProgramDirectorStudents';
 import ProgramDirectorResultsEcoe from './ProgramDirectorResultsEcoe';
 import ProgramDirectorRoleAssigment from './ProgramDirectorRoleAssigment';
+import { logout } from '../../../utils/logout';
 
 // Datos de prueba para las competencias
 const competenciasData = [
@@ -170,20 +171,7 @@ const EstadisticasContent = () => (
 
 const ProgramDirectorMainLayout: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   
-  const handleLogout = async () => {
-    try {
-      const googleAuthService = new GoogleAuthService();
-      await googleAuthService.logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Error durante el logout:', error);
-      // En caso de error, limpiar storage manualmente y navegar
-      localStorage.clear();
-      navigate('/');
-    }
-  };
 
   // Función para renderizar el contenido según la ruta
   const renderContent = () => {
@@ -208,7 +196,7 @@ const ProgramDirectorMainLayout: React.FC = () => {
         name=""
         picture=""
         role="Jefatura de Carrera"
-        onLogout={handleLogout}
+        onLogout={logout}
       />
 
       {/* Contenido principal */}

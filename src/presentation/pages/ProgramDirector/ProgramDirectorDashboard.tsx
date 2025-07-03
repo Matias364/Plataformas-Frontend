@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell }
 import SidebarProgramDirector from './SidebarProgramDirector';
 import { useNavigate } from 'react-router-dom';
 import { GoogleAuthService } from '../../../infrastructure/services/GoogleAuthService';
+import { logout } from '../../../utils/logout';
 
 // Datos de prueba para las competencias
 const competenciasData = [
@@ -88,20 +89,6 @@ const CustomBarChart: React.FC<{ data: any[] }> = ({ data }) => (
 );
 
 const ProgramDirectorDashboard: React.FC = () => {
-  const navigate = useNavigate();
-  
-  const handleLogout = async () => {
-    try {
-      const googleAuthService = new GoogleAuthService();
-      await googleAuthService.logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Error durante el logout:', error);
-      localStorage.clear();
-      navigate('/');
-    }
-  };
-
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {/* Sidebar fija */}
@@ -109,7 +96,7 @@ const ProgramDirectorDashboard: React.FC = () => {
         name=""
         picture=""
         role="Jefatura de Carrera"
-        onLogout={handleLogout}
+        onLogout={logout}
       />
 
       {/* Contenido principal */}
