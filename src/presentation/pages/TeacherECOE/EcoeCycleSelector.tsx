@@ -9,7 +9,7 @@ const cycles = [
 ];
 
 const primaryBlue = "#1565c0";
-const primaryBlueHover = "#003c8f";
+const primaryBlueHover = "#115293";
 const cardBg = "#ffffff"; // Blanco puro para tarjetas
 
 const EcoeCycleSelectorPage: React.FC = () => {
@@ -21,18 +21,22 @@ const EcoeCycleSelectorPage: React.FC = () => {
 
     return (
         <>
-            <Typography variant="h4" fontWeight={700} color="#000" sx={{ mb: 3 }}>
-                Seleccione el ciclo para gestionar
+            <Typography variant="h4" color='#000000' fontWeight={700} sx={{ mt: 2, mb: 1 }}>
+                Gestionar ECOE
             </Typography>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+                Seleccione el tipo de ECOE a gestionar
+            </Typography>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={3} sx={{ alignItems: "stretch"}}>
                 {cycles.map((cycle) => (
                     <Paper
                         key={cycle.value}
-                        elevation={3}
+                        elevation={0}
                         sx={{
                             p: 3,
                             borderRadius: 3,
                             minWidth: 320,
+                            minHeight: 200,
                             flex: 1,
                             display: "flex",
                             flexDirection: "column",
@@ -41,11 +45,17 @@ const EcoeCycleSelectorPage: React.FC = () => {
                             color: "#212121", // Gris oscuro para texto
                             boxShadow:
                                 "0px 1px 3px rgba(0,0,0,0.12), 0px 1px 2px rgba(0,0,0,0.24)",
+                            transition: "box-shadow 0.3s ease, transform 0.3s ease",
+                            "&:hover": {
+                                boxShadow:
+                                    "0px 4px 8px rgba(0,0,0,0.12), 0px 2px 4px rgba(0,0,0,0.24)",
+                                transform: "translateY(-2px)",
+                            },
                         }}
                     >
                         <Box>
                             <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
-                                {cycle.label}
+                                ECOE {cycle.label}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                                 Gestiona el ciclo {cycle.label}
