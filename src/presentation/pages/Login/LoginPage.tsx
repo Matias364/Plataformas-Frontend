@@ -13,7 +13,7 @@ const LoginPage: React.FC = () => {
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState('');
-  const { user, loading } = useAuth();
+  const { user, loading, validateUser } = useAuth();
   const navigate = useNavigate();
 
   const [showAdminForm, setShowAdminForm] = useState(false);
@@ -23,7 +23,8 @@ const LoginPage: React.FC = () => {
       // Redirige según el rol
       if (user.role === "estudiante") navigate("/perfil");
       if (user.role === "docente_ecoe") navigate("/docente-ecoe/ecoes");
-      if (user.role === "docente_asignatura") navigate("/docente-asignatura");
+      if (user.role === "docente_asignatura") navigate("/director-programa/dashboard");
+      if (user.role === "jefatura") navigate("/director-programa/dashboard");
       // Agrega más roles si es necesario
     }
   }, [user, navigate]);
@@ -42,11 +43,18 @@ const LoginPage: React.FC = () => {
         password: adminPassword,
       });
       const { accessToken, refreshToken } = response.data;
-      console.log('Admin logeado');
+      
       saveToStorage('access_token', accessToken);
-      saveToStorage('refresh_token', refreshToken);
-      // window.location.href = '/';
+      if (refreshToken) {
+        saveToStorage('refresh_token', refreshToken);
+      }
+      
+      // Revalidar el usuario para actualizar el contexto
+      await validateUser();
+      
+      // La navegación se manejará en el useEffect cuando se actualice el usuario
     } catch (error: any) {
+      console.error('Error en login admin:', error);
       setAdminError('Credenciales inválidas');
     }
   };
