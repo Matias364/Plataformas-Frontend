@@ -142,6 +142,11 @@ const ProgramDirectorUserManagement: React.FC = () => {
   // Error alert states
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [errorMessage] = useState('');
+  
+  // Delete confirmation states
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserTableData | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Función para obtener usuarios de la API
   const fetchUsers = async () => {
@@ -220,10 +225,55 @@ const ProgramDirectorUserManagement: React.FC = () => {
     setTabValue(newValue);
   };
 
-  // Función para cambiar rol de usuario
-  const handleChangeRole = (userId: string) => {
-    console.log('Cambiar rol del usuario:', userId);
-    // Aquí iría la lógica para cambiar el rol del usuario
+  // Función para abrir modal de confirmación de eliminación
+  const handleDeleteUser = (user: UserTableData) => {
+    setUserToDelete(user);
+    setOpenDeleteModal(true);
+  };
+
+  // Función para cerrar el modal de confirmación
+  const handleCloseDeleteModal = () => {
+    setOpenDeleteModal(false);
+    setUserToDelete(null);
+  };
+
+  // Función para confirmar la eliminación
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+
+    setDeleteLoading(true);
+    try {
+      const response = await fetch(`http://127.0.0.1:3000/api/v1/auth/users/${userToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMsg = errorData.message 
+          ? (Array.isArray(errorData.message) ? errorData.message[0] : errorData.message)
+          : 'Error al eliminar el usuario';
+        throw new Error(errorMsg);
+      }
+
+      setSuccessMessage('Usuario eliminado exitosamente');
+      setShowSuccessAlert(true);
+      handleCloseDeleteModal();
+      
+      // Recargar la lista de usuarios
+      await fetchUsers();
+      
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Error de conexión';
+      setSuccessMessage(''); // Limpiar mensaje de éxito
+      setShowSuccessAlert(false);
+      // Mostrar error en un alert
+      alert(`Error al eliminar usuario: ${errorMsg}`);
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   // Función para agregar usuario
@@ -517,7 +567,7 @@ const ProgramDirectorUserManagement: React.FC = () => {
                           <Button
                             variant="contained"
                             size="small"
-                            onClick={() => handleChangeRole(user.id)}
+                            onClick={() => handleDeleteUser(user)}
                             sx={{
                               backgroundColor: '#f44336',
                               '&:hover': {
@@ -626,6 +676,60 @@ const ProgramDirectorUserManagement: React.FC = () => {
             }}
           >
             {modalLoading ? 'Creando...' : 'Crear Usuario'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal de confirmación de eliminación */}
+      <Dialog 
+        open={openDeleteModal} 
+        onClose={handleCloseDeleteModal}
+        maxWidth="sm" 
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h6" component="h2" fontWeight={600} color="#f44336">
+            Confirmar Eliminación
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              ¿Está seguro que desea eliminar al usuario <strong>{userToDelete?.name}</strong>?
+            </Typography>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                <strong>¡Atención!</strong> Esta acción no se puede deshacer. 
+                Se perderán todos los registros asociados a este usuario.
+              </Typography>
+              
+            </Alert>
+            <Typography variant="body2" color="text.secondary">
+              Usuario: {userToDelete?.email}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={handleCloseDeleteModal} 
+            color="secondary"
+            disabled={deleteLoading}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleConfirmDelete}
+            variant="contained"
+            disabled={deleteLoading}
+            startIcon={deleteLoading ? <CircularProgress size={20} /> : null}
+            sx={{
+              backgroundColor: '#f44336',
+              '&:hover': {
+                backgroundColor: '#d32f2f'
+              }
+            }}
+          >
+            {deleteLoading ? 'Eliminando...' : 'Eliminar Usuario'}
           </Button>
         </DialogActions>
       </Dialog>
