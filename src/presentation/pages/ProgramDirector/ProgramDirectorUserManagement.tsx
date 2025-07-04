@@ -20,8 +20,6 @@ import {
   Avatar,
   Card,
   CardContent,
-  Tab,
-  Tabs,
   CircularProgress,
   Dialog,
   DialogTitle,
@@ -35,12 +33,6 @@ import {
   Add as AddIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
 
 interface User {
   id: string;
@@ -59,26 +51,6 @@ interface UserTableData {
   status: string;
   statusColor: string;
   avatar: null;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
 }
 
 // Función para mapear roles de la API a nombres en español
@@ -123,7 +95,6 @@ const ProgramDirectorUserManagement: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState('Todos los roles');
   const [users, setUsers] = useState<UserTableData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserTableData[]>([]);
-  const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -218,11 +189,6 @@ const ProgramDirectorUserManagement: React.FC = () => {
     }
 
     setFilteredUsers(filtered);
-  };
-
-  // Función para cambiar tabs
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
   };
 
   // Función para abrir modal de confirmación de eliminación
@@ -410,30 +376,9 @@ const ProgramDirectorUserManagement: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab 
-            label="Usuarios" 
-            sx={{ 
-              textTransform: 'none',
-              fontWeight: tabValue === 0 ? 600 : 400
-            }} 
-          />
-          <Tab 
-            label="Asignaturas" 
-            sx={{ 
-              textTransform: 'none',
-              fontWeight: tabValue === 1 ? 600 : 400
-            }} 
-          />
-        </Tabs>
-      </Box>
-
       {/* Panel de Usuarios */}
-      <TabPanel value={tabValue} index={0}>
-        <Card sx={{ boxShadow: 2 }}>
-          <CardContent>
+      <Card sx={{ boxShadow: 2 }}>
+        <CardContent>
             <Box sx={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -587,21 +532,6 @@ const ProgramDirectorUserManagement: React.FC = () => {
             </TableContainer>
           </CardContent>
         </Card>
-      </TabPanel>
-
-      {/* Panel de Asignaturas */}
-      <TabPanel value={tabValue} index={1}>
-        <Card sx={{ boxShadow: 2 }}>
-          <CardContent>
-            <Typography variant="h6" component="h2" fontWeight={600} color="#333" sx={{ mb: 2 }}>
-              Gestión de Asignaturas
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Configure roles de usuario y asigne permisos específicos - En desarrollo
-            </Typography>
-          </CardContent>
-        </Card>
-      </TabPanel>
 
       {/* Modal para agregar usuario */}
       <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
