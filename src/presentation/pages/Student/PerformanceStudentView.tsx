@@ -137,10 +137,10 @@ const PerformanceStudentView: React.FC<Props> = ({
               <BarChart
                 data={competenciasGrafico}
                 layout="vertical"
-                margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
-                barCategoryGap={20}
+                margin={{ left: 1, right: 50, top: 10, bottom: 10 }}
+                barCategoryGap={10}
               >
-                <XAxis type="number" domain={[0, 100]} hide />
+                <XAxis type="number" domain={[0, 110]} hide />
                 <YAxis
                   dataKey="name"
                   type="category"
@@ -148,7 +148,8 @@ const PerformanceStudentView: React.FC<Props> = ({
                   tick={{ fontSize: 13, fill: '#222' }}
                 />
                 <Tooltip formatter={(value: number) => `${value}%`} />
-                <Bar dataKey="value" radius={[8, 8, 8, 8]}>
+                <Bar dataKey="value" radius={[0, 4, 4, 0]}
+                  >
                   <LabelList dataKey="value" position="right" formatter={(value: number) => `${value}%`} />
                   {competenciasGrafico.map((entry) => (
                     <Cell key={entry.name} fill={entry.color} />
