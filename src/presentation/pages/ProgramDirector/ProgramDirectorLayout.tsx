@@ -38,7 +38,7 @@ const GestionarUsuariosPage = () => (
 const ProgramDirectorLayout: React.FC = () => {
   return (
     <Routes>
-      <Route path="/estadisticas" element={<ECOEStatisticsV2 />} />
+      <Route path="/estadisticas" element={<ProgramDirectorStatistics />} />
       <Route path="/estudiantes" element={<EstudiantesPage />} />
       <Route path="/resultados-ecoe" element={<ResultadosEcoePage />} />
       <Route path="/gestionar-usuarios" element={<ProgramDirectorUserManagement />} />

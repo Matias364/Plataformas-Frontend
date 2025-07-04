@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import ProgramDirectorStudents from './ProgramDirectorStudents';
 import ProgramDirectorResultsEcoe from './ProgramDirectorResultsEcoe';
 import ProgramDirectorUserManagement from './ProgramDirectorUserManagement';
+import ECOEStatisticsV2 from '../TeacherECOE/ECOEStatisticsV2';
 import { logout } from '../../../utils/logout';
 
 // Datos de prueba para las competencias
@@ -245,7 +246,7 @@ const ProgramDirectorMainLayout: React.FC = () => {
       case '/director-programa/resultados-ecoe':
         return <ProgramDirectorResultsEcoe />;
       case '/director-programa/estadisticas':
-        return <EstadisticasContent />;
+        return <ECOEStatisticsV2 />;
       case '/director-programa/gestionar-usuarios':
         return <ProgramDirectorUserManagement />;
       case '/director-programa/dashboard':
