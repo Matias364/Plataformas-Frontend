@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import ProgramDirectorStudents from './ProgramDirectorStudents';
 import ProgramDirectorResultsEcoe from './ProgramDirectorResultsEcoe';
 import ProgramDirectorUserManagement from './ProgramDirectorUserManagement';
+import ProgramDirectorSubjectsManagement from './ProgramDirectorSubjectsManagement';
 import ECOEStatisticsV2 from '../TeacherECOE/ECOEStatisticsV2';
 import { logout } from '../../../utils/logout';
 
@@ -249,6 +250,8 @@ const ProgramDirectorMainLayout: React.FC = () => {
         return <ECOEStatisticsV2 />;
       case '/director-programa/gestionar-usuarios':
         return <ProgramDirectorUserManagement />;
+      case '/director-programa/gestion-asignaturas':
+        return <ProgramDirectorSubjectsManagement />;
       case '/director-programa/dashboard':
         return <DashboardContent />;
       default:
