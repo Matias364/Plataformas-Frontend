@@ -25,6 +25,9 @@ interface Props {
   competenciasConteo: Record<string, number>;
   filteredHistorial: any[];
   competenciasTotales: Record<string, number>; // NUEVO
+  periodo: string[];
+  periodoSeleccionado: string;
+  setPeriodoSeleccionado: (val: string) => void;
 }
 
 const PerformanceStudentView: React.FC<Props> = ({
@@ -35,17 +38,20 @@ const PerformanceStudentView: React.FC<Props> = ({
   competenciasGrafico,
   competenciasConteo,
   filteredHistorial,
-  competenciasTotales // NUEVO
+  competenciasTotales, // NUEVO
+  periodo,
+  periodoSeleccionado,
+  setPeriodoSeleccionado
 }) => (
-  <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#ffffff' }}>
+  <Box sx={{ display: 'flex', height: '100vh', overflowY: 'hidden', position: 'relative', backgroundColor: '#ffffff' }}>
     <Box
       sx={{
         flexGrow: 1,
-        p: { xs: 1, sm: 4 },
+        p: { xs: 0, sm: 3 },
+        overflowY: 'auto',
         ml: { xs: 0, sm: '240px' },
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        width: 'calc(100vw - 480px)',
+        height: '100%',
       }}
     >
       <Box
@@ -60,8 +66,25 @@ const PerformanceStudentView: React.FC<Props> = ({
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" fontWeight={700} color='#000'>Rendimiento General</Typography>
-          <Select value="2025-1" size="small" sx={{ minWidth: 180, bgcolor: '#fff' }}>
-            <MenuItem value="2025-1">Semestre 2025-1</MenuItem>
+          <Select
+            value={periodoSeleccionado}
+            onChange={e => setPeriodoSeleccionado(e.target.value)}
+            size="small"
+            sx={{ minWidth: 200, bgcolor: '#fff' }}
+            renderValue={(selected) => {
+              if (!selected) return 'Seleccionar periodo';
+              const [year, semester] = selected.split('-');
+              return `Año ${year} | Semestre: ${semester}`;
+            }}
+          >
+            {periodo.map(p => {
+              const [year, semester] = p.split('-');
+              return (
+                <MenuItem key={p} value={p} sx={{ justifyContent: 'center'}}>
+                  {year}-{semester}
+                </MenuItem>
+              );
+            })}
           </Select>
         </Box>
 
@@ -147,7 +170,7 @@ const PerformanceStudentView: React.FC<Props> = ({
                   width={140}
                   tick={{ fontSize: 13, fill: '#222' }}
                 />
-                <Tooltip formatter={(value: number) => `${value}%`} />
+                <Tooltip formatter={(value: number) => [`Progreso: ${value}%`]}/>
                 <Bar dataKey="value" radius={[0, 4, 4, 0]}
                   >
                   <LabelList dataKey="value" position="right" formatter={(value: number) => `${value}%`} />
@@ -207,7 +230,16 @@ const PerformanceStudentView: React.FC<Props> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredHistorial.map((item) => (
+                {filteredHistorial.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">
+                      <Box sx={{ py: 2, color: 'text.secondary', fontStyle: 'italic' }}>
+                        No se encontraron asignaturas con el nombre de '{search}'
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                filteredHistorial.map((item) => (
                   <TableRow key={item.codigo}>
                     <TableCell sx={{ fontWeight: 700 }}>{item.codigo}</TableCell>
                     <TableCell>{item.nombre}</TableCell>
@@ -247,7 +279,8 @@ const PerformanceStudentView: React.FC<Props> = ({
                       </Box>
                     </TableCell>
                   </TableRow>
-                ))}
+                ))
+                )}
               </TableBody>
             </Table>
           </TableContainer>
