@@ -346,58 +346,7 @@ function StudentGradesModal({ open, onClose }: StudentGradesModalProps) {
   );
 }
 
-const ExcelDropZone = ({ onBack }: { onBack: () => void }) => (
-  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
-    <Box sx={{ width: '100%', maxWidth: 1100, display: 'flex', alignItems: 'center', mb: 2 }}>
-      <IconButton onClick={onBack} sx={{ mr: 1 }}>
-        <ArrowBackIcon sx={{ fontSize: 28 }} />
-      </IconButton>
-      <Typography variant="h5" fontWeight={700} color="black">
-        Subir Notas por Excel
-      </Typography>
-    </Box>
-    <Box
-      sx={{
-        width: '90%',
-        maxWidth: 1100,
-        minHeight: 350,
-        bgcolor: '#F6F9FF',
-        border: '2px dashed #90B8F8',
-        borderRadius: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        mx: 'auto',
-        mb: 4,
-      }}
-    >
-      <Typography variant="h5" fontWeight={500} mb={2} color='black'>
-        Arrastra para subir
-      </Typography>
-      <CloudUploadOutlinedIcon sx={{ fontSize: 90, color: '#A0A4AA', mb: 2 }} />
-      <Typography color="#757575" fontSize={28} align="center">
-        Suelta en esta area el archivo Excel<br />para subir
-      </Typography>
-    </Box>
-    <Button
-      variant="contained"
-      sx={{
-        bgcolor: '#00A89D',
-        color: '#fff',
-        borderRadius: 8,
-        px: 5,
-        py: 1.5,
-        fontWeight: 600,
-        fontSize: 18,
-        boxShadow: 'none',
-        '&:hover': { bgcolor: '#009688' },
-      }}
-    >
-      Confirmar
-    </Button>
-  </Box>
-);
+
 
 const RegisterGradesSubject = () => {
   const [option, setOption] = useState('');
@@ -425,8 +374,6 @@ const RegisterGradesSubject = () => {
         <Box
           sx={{
             display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 3,
             justifyContent: 'center',
             alignItems: 'center',
             mb: 4,
@@ -457,30 +404,6 @@ const RegisterGradesSubject = () => {
               </Typography>
             </Card>
           </Box>
-          <Box sx={{ maxWidth: 350, width: '100%' }}>
-            <Card
-              onClick={() => handleOption('excel')}
-              sx={{
-                p: 4,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                border: '2px solid #E0E0E0',
-                boxShadow: 0,
-                transition: 'border-color 0.2s',
-                '&:hover': { borderColor: '#2196F3', boxShadow: 2 },
-              }}
-            >
-              <InsertDriveFileIcon sx={{ fontSize: 48, color: '#2196F3', mb: 1 }} />
-              <Typography variant="h6" fontWeight={600} mb={1}>
-                Por Excel
-              </Typography>
-              <Typography color="text.secondary" align="center">
-                Sube un archivo Excel con las notas de todos los estudiantes.
-              </Typography>
-            </Card>
-          </Box>
         </Box>
       )}
 
@@ -489,8 +412,7 @@ const RegisterGradesSubject = () => {
         <StudentGradesModal open={openModal} onClose={handleBack} />
       )}
 
-      {/* Dropzone para Excel */}
-      {option === 'excel' && <ExcelDropZone onBack={handleBack} />}
+      
     </Box>
   );
 };
