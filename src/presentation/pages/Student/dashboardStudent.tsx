@@ -156,11 +156,20 @@ const DashboardStudent = () => {
                 setSelectedEcoe(ecoe || null);
                 }}
                 disabled= {loading || ecoeYears.length === 0}
+                renderValue={(selected) => {
+                  if (!selected) return 'Seleccionar ECOE';
+                  const [year, semester] = String(selected).split('-');
+                  return `Año: ${year} | Semestre: ${semester}`;
+                }}
               >
-                {ecoeYears.map((y) => (
-                  <MenuItem key={y.yearSemester} value={y.yearSemester}>
-                    {y.yearSemester}
-                  </MenuItem>))}
+              {ecoeYears.map((y) => {
+                const [year, semester] = y.yearSemester.split('-');
+                return (
+                  <MenuItem key={y.yearSemester} value={y.yearSemester} sx={{ justifyContent: 'center'}}>
+                    {year}-{semester}
+                  </MenuItem>
+                );
+              })}
               </Select>
             </Box>
 
