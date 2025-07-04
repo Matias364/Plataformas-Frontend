@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PerformanceStudentView from './PerformanceStudentView';
 
 const PerformanceStudent = () => {
@@ -6,6 +6,8 @@ const PerformanceStudent = () => {
   const [asignaturas, setAsignaturas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [competenciasTotales, setCompetenciasTotales] = useState<Record<string, number>>({});
+  const [periodo, setPeriodo] = useState<string[]>([]);
+  const [periodoSeleccionado, setPeriodoSeleccionado] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,6 +28,17 @@ const PerformanceStudent = () => {
         }
         const student = await resStudent.json();
         console.log('Student info:', student);
+        // Obtener periodo de asignaturas
+        const periodoSet = new Set<string>();
+        (student.subjectEnrollments || []).forEach((subj: any) => {
+          if (subj.year && subj.semester) {
+            periodoSet.add(`${subj.year}-${subj.semester}`);
+          }
+        });
+        const periodosArray = Array.from(periodoSet).sort((a, b) => b.localeCompare(a));
+        setPeriodo(periodosArray);
+        setPeriodoSeleccionado(periodosArray[0] || '');
+
         // Obtener info de cada asignatura y sus competencias (incluyendo id de competencia)
         const asignaturasData = await Promise.all(
           (student.subjectEnrollments || []).map(async (subj: any) => {
@@ -60,6 +73,7 @@ const PerformanceStudent = () => {
               nombre: asigInfo.name,
               calificacion: subj.grade,
               semestre: subj.semester,
+              year: subj.year,
               competencias, // ahora es array de {id, name}
               nivel,
             };
@@ -98,6 +112,13 @@ const PerformanceStudent = () => {
     };
     fetchData();
   }, []);
+
+  // Filtro de asignaturas por periodo seleccionado
+  const asignaturasFiltradas = useMemo(() => {
+    if (!periodoSeleccionado) return asignaturas;
+    const [year, semester] = periodoSeleccionado.split('-');
+    return asignaturas.filter(a => a.year === parseInt(year) && a.semestre === parseInt(semester));
+  }, [asignaturas, periodoSeleccionado]);
 
   function normalize(str: string) {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -140,12 +161,15 @@ const PerformanceStudent = () => {
     <PerformanceStudentView
       search={search}
       setSearch={setSearch}
-      asignaturas={asignaturas}
+      asignaturas={asignaturasFiltradas}
       loading={loading}
       competenciasGrafico={competenciasGrafico}
       competenciasConteo={Object.fromEntries(Object.entries(competenciasConteo).map(([k, v]) => [k, v.count]))}
       filteredHistorial={filteredHistorial}
       competenciasTotales={competenciasTotales}
+      periodo={periodo}
+      periodoSeleccionado={periodoSeleccionado}
+      setPeriodoSeleccionado={setPeriodoSeleccionado}
     />
   );
 };
