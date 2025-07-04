@@ -7,6 +7,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import GroupsIcon from '@mui/icons-material/Groups';
+import SchoolIcon from '@mui/icons-material/School';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
@@ -36,6 +37,7 @@ const SidebarProgramDirector: React.FC<SidebarProgramDirectorProps> = ({ name, p
     { label: 'Estudiantes', icon: <PeopleIcon sx={{ color: "#5EC69C" }} />, path: '/director-programa/estudiantes' },
     { label: 'Resultados ECOE', icon: <AssignmentIcon sx={{ color: "#6CC3F8" }} />, path: '/director-programa/resultados-ecoe' },
     { label: 'Gestionar Usuarios', icon: <GroupsIcon sx={{ color: "#F8C46C" }} />, path: '/director-programa/gestionar-usuarios' },
+    { label: 'Gestión de Asignaturas', icon: <SchoolIcon sx={{ color: "#17a2b8" }} />, path: '/director-programa/gestion-asignaturas' },
   ];
 
   const drawerContent = (
