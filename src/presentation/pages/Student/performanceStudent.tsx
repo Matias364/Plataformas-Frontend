@@ -99,10 +99,14 @@ const PerformanceStudent = () => {
     fetchData();
   }, []);
 
+  function normalize(str: string) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
   const filteredHistorial = asignaturas.filter(
     (item) =>
-      item.nombre?.toLowerCase().includes(search.toLowerCase()) ||
-      item.codigo?.toLowerCase().includes(search.toLowerCase())
+      normalize(item.nombre || "").startsWith(search.toLowerCase()) ||
+      normalize(item.codigo || "").startsWith(search.toLowerCase())
   );
 
   // Calcular todas las competencias únicas del estudiante y cuántas veces aparecen
