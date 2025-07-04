@@ -3,7 +3,6 @@ import {
   Drawer, Box, Avatar, Typography, List, ListItemButton, ListItemIcon,
   ListItemText, Button, IconButton, useMediaQuery
 } from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -33,11 +32,10 @@ const SidebarProgramDirector: React.FC<SidebarProgramDirectorProps> = ({ name, p
   const navigate = useNavigate();
 
   const menuItems = [
-    { label: 'Dashboard', icon: <DashboardIcon color="primary" />, path: '/director-programa/dashboard' },
+    { label: 'Estadísticas', icon: <BarChartIcon color="primary" />, path: '/director-programa/estadisticas' },
     { label: 'Estudiantes', icon: <PeopleIcon sx={{ color: "#5EC69C" }} />, path: '/director-programa/estudiantes' },
     { label: 'Resultados ECOE', icon: <AssignmentIcon sx={{ color: "#6CC3F8" }} />, path: '/director-programa/resultados-ecoe' },
-    { label: 'Estadísticas', icon: <BarChartIcon sx={{ color: "#B36CF8" }} />, path: '/director-programa/estadisticas' },
-    { label: 'Asignación de Roles', icon: <GroupsIcon sx={{ color: "#F8C46C" }} />, path: '/director-programa/asignacion-roles' },
+    { label: 'Gestionar Usuarios', icon: <GroupsIcon sx={{ color: "#F8C46C" }} />, path: '/director-programa/gestionar-usuarios' },
   ];
 
   const drawerContent = (
