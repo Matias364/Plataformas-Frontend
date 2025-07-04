@@ -2,11 +2,10 @@ import React from 'react';
 import { Box, Typography, Card, CardContent } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
 import SidebarProgramDirector from './SidebarProgramDirector';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { GoogleAuthService } from '../../../infrastructure/services/GoogleAuthService';
+import { useLocation } from 'react-router-dom';
 import ProgramDirectorStudents from './ProgramDirectorStudents';
 import ProgramDirectorResultsEcoe from './ProgramDirectorResultsEcoe';
-import ProgramDirectorRoleAssigment from './ProgramDirectorRoleAssigment';
+import ProgramDirectorUserManagement from './ProgramDirectorUserManagement';
 import { logout } from '../../../utils/logout';
 
 // Datos de prueba para las competencias
@@ -68,14 +67,15 @@ const competenciaColors = [
 ];
 
 const CustomBarChart: React.FC<{ data: any[] }> = ({ data }) => (
-  <Box sx={{ height: 300 }}>
+  <Box sx={{ height: { xs: 250, sm: 300, md: 350 }, width: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+      <BarChart data={data} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis 
           dataKey="name" 
-          tick={{ fontSize: 12 }}
+          tick={{ fontSize: 11 }}
           interval={0}
+          height={60}
         />
         <YAxis domain={[0, 100]} />
         <Bar 
@@ -97,7 +97,7 @@ const DashboardContent: React.FC = () => (
     {/* Header */}
     <Box sx={{ mb: 4 }}>
       <Typography variant="h4" component="h1" fontWeight={700} color="#333">
-        Dashboard
+        Estadísticas Generales
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
         Gestión y supervisión del programa ECOE
@@ -157,14 +157,78 @@ const DashboardContent: React.FC = () => (
   </Box>
 );
 
-// Componentes placeholder para las otras páginas
-const EstadisticasContent = () => (
+// Componente de contenido de Estadísticas
+const EstadisticasContent: React.FC = () => (
   <Box>
-    <Typography variant="h4" component="h1" fontWeight={700} color="#333" sx={{ mb: 2 }}>
-      Estadísticas
-    </Typography>
-    <Card sx={{ p: 3 }}>
-      <Typography>Página de estadísticas - En desarrollo</Typography>
+    {/* Header */}
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h4" component="h1" fontWeight={700} color="#333">
+        Estadísticas ECOE
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+        Análisis y métricas del programa ECOE
+      </Typography>
+    </Box>
+
+    {/* Sección de Rendimiento General ECOE */}
+    <Card sx={{ mb: 4, boxShadow: 2, width: '100%' }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+        <Typography variant="h5" component="h2" fontWeight={600} sx={{ mb: 1 }}>
+          Rendimiento General ECOE
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Resultados globales del último periodo de evaluación
+        </Typography>
+
+        {/* Leyenda de competencias */}
+        <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          {competenciasData.map((comp, index) => (
+            <Box key={comp.name} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: competenciaColors[index],
+                }}
+              />
+              <Typography variant="body2" fontSize={14}>
+                {comp.name}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+
+        {/* Grid con los tres gráficos usando Flexbox */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', lg: 'row' }, 
+          gap: { xs: 2, sm: 3, md: 4 },
+          justifyContent: 'space-between',
+          width: '100%'
+        }}>
+          <Box sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 }, width: '100%' }}>
+            <Typography variant="h6" sx={{ mb: 2, textAlign: 'center', fontWeight: 600 }}>
+              Ciclo Básico
+            </Typography>
+            <CustomBarChart data={graficoData1} />
+          </Box>
+
+          <Box sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 }, width: '100%' }}>
+            <Typography variant="h6" sx={{ mb: 2, textAlign: 'center', fontWeight: 600 }}>
+              Ciclo Profesional
+            </Typography>
+            <CustomBarChart data={graficoData2} />
+          </Box>
+
+          <Box sx={{ flex: 1, minWidth: { xs: '100%', lg: 0 }, width: '100%' }}>
+            <Typography variant="h6" sx={{ mb: 2, textAlign: 'center', fontWeight: 600 }}>
+              Ciclo Final
+            </Typography>
+            <CustomBarChart data={graficoData3} />
+          </Box>
+        </Box>
+      </CardContent>
     </Card>
   </Box>
 );
@@ -182,10 +246,12 @@ const ProgramDirectorMainLayout: React.FC = () => {
         return <ProgramDirectorResultsEcoe />;
       case '/director-programa/estadisticas':
         return <EstadisticasContent />;
-      case '/director-programa/asignacion-roles':
-        return <ProgramDirectorRoleAssigment />;
-      default:
+      case '/director-programa/gestionar-usuarios':
+        return <ProgramDirectorUserManagement />;
+      case '/director-programa/dashboard':
         return <DashboardContent />;
+      default:
+        return <EstadisticasContent />;
     }
   };
 
@@ -205,9 +271,11 @@ const ProgramDirectorMainLayout: React.FC = () => {
         sx={{ 
           flexGrow: 1, 
           bgcolor: '#f5f5f5',
-          p: 3,
+          p: { xs: 2, sm: 3, md: 4 },
           ml: { xs: 0, sm: '240px' }, // Margen para la sidebar
-          minHeight: '100vh'
+          minHeight: '100vh',
+          width: { xs: '100%', sm: 'calc(100% - 240px)' },
+          maxWidth: '100%'
         }}
       >
         {renderContent()}

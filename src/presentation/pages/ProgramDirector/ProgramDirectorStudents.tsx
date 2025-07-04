@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -15,96 +15,121 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  IconButton,
   InputAdornment,
   Chip,
-  Avatar
+  Avatar,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Add as AddIcon,
-  GetApp as GetAppIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
-
-// Datos de prueba para los estudiantes
-const studentsData = [
-  {
-    rut: 'ST0001',
-    name: 'Carlos Martinez',
-    email: 'carlos.martinez@universidad.edu',
-    lastEcoe: 'ECOE 2023-2',
-    averageEcoe: 6.5,
-    avatar: null
-  },
-  {
-    rut: 'ST0002',
-    name: 'Maria Gonzalez',
-    email: 'maria.gonzalez@universidad.edu',
-    lastEcoe: 'ECOE 2023-2',
-    averageEcoe: 6.3,
-    avatar: null
-  },
-  {
-    rut: 'ST0003',
-    name: 'Juan Perez',
-    email: 'juan.perez@universidad.edu',
-    lastEcoe: 'ECOE 2023-2',
-    averageEcoe: 6.3,
-    avatar: null
-  },
-  {
-    rut: 'ST0004',
-    name: 'Ana Rodriguez',
-    email: 'ana.rodriguez@universidad.edu',
-    lastEcoe: 'ECOE 2023-2',
-    averageEcoe: 6.0,
-    avatar: null
-  },
-  {
-    rut: 'ST0005',
-    name: 'Luis Sanchez',
-    email: 'luis.sanchez@universidad.edu',
-    lastEcoe: 'ECOE 2023-2',
-    averageEcoe: 6.9,
-    avatar: null
-  }
-];
+import { StudentsByCycleService } from '../../../infrastructure/services/StudentsByCycleService';
+import { StudentDisplay, CycleType } from '../../../domain/student/StudentTypes';
+import StudentAnnotationsModal from '../../components/StudentAnnotationsModal/StudentAnnotationsModal';
 
 const ProgramDirectorStudents: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSemester, setSelectedSemester] = useState('todos');
-  const [filteredStudents, setFilteredStudents] = useState(studentsData);
+  const [selectedCycle, setSelectedCycle] = useState<CycleType>('BASICO');
+  const [students, setStudents] = useState<StudentDisplay[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<StudentDisplay[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Estados para el modal de anotaciones
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [selectedStudent, setSelectedStudent] = useState<{ name: string; id: string } | null>(null);
 
-  // Función para filtrar estudiantes
+  // Cargar estudiantes cuando cambia el ciclo
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const studentsData = await StudentsByCycleService.getStudentsForDisplay(selectedCycle);
+        setStudents(studentsData);
+        setFilteredStudents(studentsData);
+      } catch (err) {
+        console.error('Error al cargar estudiantes:', err);
+        setError('Error al cargar los estudiantes. Verifique la conexión con el servidor.');
+        setStudents([]);
+        setFilteredStudents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, [selectedCycle]);
+
+  // Filtrar estudiantes cuando cambia el término de búsqueda
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredStudents(students);
+    } else {
+      const filtered = students.filter(student =>
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.rut.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredStudents(filtered);
+    }
+  }, [searchTerm, students]);
+
+  // Función para filtrar estudiantes por búsqueda
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.toLowerCase();
-    setSearchTerm(value);
-    
-    const filtered = studentsData.filter(student =>
-      student.name.toLowerCase().includes(value) ||
-      student.rut.toLowerCase().includes(value) ||
-      student.email.toLowerCase().includes(value)
-    );
-    setFilteredStudents(filtered);
+    setSearchTerm(event.target.value);
   };
 
-  // Función para manejar el cambio de semestre
-  const handleSemesterChange = (event: any) => {
-    setSelectedSemester(event.target.value);
+  // Función para manejar el cambio de ciclo
+  const handleCycleChange = (event: any) => {
+    setSelectedCycle(event.target.value as CycleType);
+    setSearchTerm(''); // Limpiar búsqueda al cambiar ciclo
   };
 
   // Función para manejar la acción de hoja de vida
-  const handleViewProfile = (studentRut: string) => {
-    console.log('Ver hoja de vida del estudiante:', studentRut);
-    // Aquí iría la navegación a la hoja de vida del estudiante
+  const handleViewProfile = (student: StudentDisplay) => {
+    setSelectedStudent({ name: student.name, id: student.studentId });
+    setModalOpen(true);
   };
 
-  // Función para agregar estudiantes
-  const handleAddStudents = () => {
-    console.log('Agregar estudiantes');
-    // Aquí iría la lógica para agregar estudiantes
+  // Función para cerrar el modal
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedStudent(null);
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ 
+        p: 3, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '400px' 
+      }}>
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+        <Button 
+          variant="contained" 
+          onClick={() => window.location.reload()}
+          sx={{ mt: 2 }}
+        >
+          Reintentar
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -120,35 +145,17 @@ const ProgramDirectorStudents: React.FC = () => {
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Semestre</InputLabel>
+            <InputLabel>Ciclo ECOE</InputLabel>
             <Select
-              value={selectedSemester}
-              onChange={handleSemesterChange}
-              label="Semestre"
+              value={selectedCycle}
+              onChange={handleCycleChange}
+              label="Ciclo ECOE"
             >
-              <MenuItem value="todos">Todos los semestres</MenuItem>
-              <MenuItem value="2023-1">2023-1</MenuItem>
-              <MenuItem value="2023-2">2023-2</MenuItem>
-              <MenuItem value="2024-1">2024-1</MenuItem>
-              <MenuItem value="2024-2">2024-2</MenuItem>
+              <MenuItem value="BASICO">Básico</MenuItem>
+              <MenuItem value="PROFESIONAL">Profesional</MenuItem>
+              <MenuItem value="FINAL">Final</MenuItem>
             </Select>
           </FormControl>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAddStudents}
-            sx={{
-              backgroundColor: '#1976d2',
-              '&:hover': {
-                backgroundColor: '#1565c0'
-              }
-            }}
-          >
-            Agregar Estudiantes
-          </Button>
-          <IconButton sx={{ color: '#666' }}>
-            <GetAppIcon />
-          </IconButton>
         </Box>
       </Box>
 
@@ -161,7 +168,7 @@ const ProgramDirectorStudents: React.FC = () => {
           mb: 2 
         }}>
           <Typography variant="h6" component="h2" fontWeight={600} color="#333">
-            Lista de Estudiantes
+            Lista de Estudiantes - Ciclo {selectedCycle}
           </Typography>
           <TextField
             placeholder="Buscar estudiantes por nombre, RUT..."
@@ -182,77 +189,136 @@ const ProgramDirectorStudents: React.FC = () => {
 
         {/* Tabla de Estudiantes */}
         <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
-          <Table sx={{ minWidth: 650 }}>
+          <Table sx={{ minWidth: 900 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                <TableCell sx={{ fontWeight: 600, color: '#555' }}>RUT</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#555' }}>Nombre</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#555' }}>Email</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#555' }}>Último ECOE</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#555' }}>Promedio ECOE</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#555' }}>Acciones</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#555', width: '13%' }}>RUT</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#555', width: '18%' }}>Nombre</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#555', width: '22%' }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#555', width: '11%' }}>Último ECOE</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#555', width: '13%' }}>Promedio ECOE</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#555', width: '13%' }}>Nivel Logrado</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#555', width: '10%' }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredStudents.map((student) => (
-                <TableRow
-                  key={student.rut}
-                  sx={{ '&:hover': { backgroundColor: '#f9f9f9' } }}
-                >
-                  <TableCell sx={{ color: '#666' }}>{student.rut}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar 
-                        sx={{ 
-                          width: 24, 
-                          height: 24, 
-                          backgroundColor: '#1976d2',
-                          fontSize: '0.75rem'
-                        }}
-                      >
-                        <PersonIcon fontSize="small" />
-                      </Avatar>
-                      <Typography variant="body2" color="#333">
-                        {student.name}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ color: '#666' }}>{student.email}</TableCell>
-                  <TableCell sx={{ color: '#666' }}>{student.lastEcoe}</TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={student.averageEcoe.toFixed(1)}
-                      size="small"
-                      sx={{
-                        backgroundColor: student.averageEcoe >= 6.5 ? '#4caf50' : 
-                                       student.averageEcoe >= 6.0 ? '#ff9800' : '#f44336',
-                        color: 'white',
-                        fontWeight: 600
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleViewProfile(student.rut)}
-                      sx={{
-                        backgroundColor: '#1976d2',
-                        '&:hover': {
-                          backgroundColor: '#1565c0'
-                        },
-                        textTransform: 'none'
-                      }}
-                    >
-                      Hoja de Vida
-                    </Button>
+              {filteredStudents.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      No se encontraron estudiantes para el ciclo {selectedCycle}
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredStudents.map((student) => (
+                  <TableRow
+                    key={student.studentId}
+                    sx={{ '&:hover': { backgroundColor: '#f9f9f9' } }}
+                  >
+                    <TableCell sx={{ color: '#666', width: '13%' }}>{student.rut}</TableCell>
+                    <TableCell sx={{ width: '18%' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar 
+                          sx={{ 
+                            width: 24, 
+                            height: 24, 
+                            backgroundColor: '#1976d2',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          <PersonIcon fontSize="small" />
+                        </Avatar>
+                        <Typography variant="body2" color="#333">
+                          {student.name}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ color: '#666', width: '22%' }}>{student.email}</TableCell>
+                    <TableCell sx={{ color: '#666', width: '11%' }}>{student.lastEcoe}</TableCell>
+                    <TableCell sx={{ width: '13%' }}>
+                      {student.averageEcoe !== null ? (
+                        <Chip 
+                          label={student.averageEcoe.toFixed(1)}
+                          size="small"
+                          sx={{
+                            backgroundColor: student.averageEcoe >= 6.5 ? '#4caf50' : 
+                                           student.averageEcoe >= 6.0 ? '#ff9800' : 
+                                           student.averageEcoe >= 4.0 ? '#2196f3' : '#f44336',
+                            color: 'white',
+                            fontWeight: 600
+                          }}
+                        />
+                      ) : (
+                        <Chip 
+                          label="N/A"
+                          size="small"
+                          sx={{
+                            backgroundColor: '#9e9e9e',
+                            color: 'white',
+                            fontWeight: 600
+                          }}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ width: '13%' }}>
+                      <Chip 
+                        label={student.achievementLevel}
+                        size="small"
+                        variant={student.achievementLevel === 'N/A' ? 'filled' : 'outlined'}
+                        sx={{
+                          ...(student.achievementLevel === 'N/A' ? {
+                            backgroundColor: '#9e9e9e',
+                            color: 'white',
+                            fontWeight: 600
+                          } : {
+                            borderColor: student.achievementLevel === 'Satisfactorio' ? '#4caf50' :
+                                       student.achievementLevel === 'Suficiente' ? '#ff9800' :
+                                       student.achievementLevel === 'Insuficiente' ? '#f44336' : '#9e9e9e',
+                            color: student.achievementLevel === 'Satisfactorio' ? '#4caf50' :
+                                  student.achievementLevel === 'Suficiente' ? '#ff9800' :
+                                  student.achievementLevel === 'Insuficiente' ? '#f44336' : '#9e9e9e',
+                          }),
+                          fontWeight: 500
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ width: '10%' }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleViewProfile(student)}
+                        sx={{
+                          backgroundColor: '#1976d2',
+                          '&:hover': {
+                            backgroundColor: '#1565c0'
+                          },
+                          textTransform: 'none',
+                          fontSize: '0.8rem',
+                          padding: '6px 12px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        Hoja de Vida
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       </Box>
+
+      {/* Modal de Anotaciones */}
+      {selectedStudent && (
+        <StudentAnnotationsModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          studentName={selectedStudent.name}
+          studentId={selectedStudent.id}
+        />
+      )}
     </Box>
   );
 };

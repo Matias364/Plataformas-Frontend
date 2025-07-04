@@ -1,7 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import ProgramDirectorDashboard from './ProgramDirectorDashboard';
+import ProgramDirectorDashboard from './ProgramDirectorStatistics';
 import { Box } from '@mui/material';
+import ProgramDirectorStatistics from './ProgramDirectorStatistics';
+import ProgramDirectorUserManagement from './ProgramDirectorUserManagement';
+import ECOEStatisticsV2 from '../TeacherECOE/ECOEStatisticsV2';
 
 // Componentes placeholder para las otras rutas
 const EstudiantesPage = () => (
@@ -25,22 +28,21 @@ const EstadisticasPage = () => (
   </Box>
 );
 
-const AsignacionRolesPage = () => (
+const GestionarUsuariosPage = () => (
   <Box sx={{ p: 3 }}>
-    <h1>Asignación de Roles</h1>
-    <p>Página de asignación de roles - En desarrollo</p>
+    <h1>Gestionar Usuarios</h1>
+    <p>Página de gestión de usuarios - En desarrollo</p>
   </Box>
 );
 
 const ProgramDirectorLayout: React.FC = () => {
   return (
     <Routes>
-      <Route path="/dashboard" element={<ProgramDirectorDashboard />} />
+      <Route path="/estadisticas" element={<ECOEStatisticsV2 />} />
       <Route path="/estudiantes" element={<EstudiantesPage />} />
       <Route path="/resultados-ecoe" element={<ResultadosEcoePage />} />
-      <Route path="/estadisticas" element={<EstadisticasPage />} />
-      <Route path="/asignacion-roles" element={<AsignacionRolesPage />} />
-      <Route path="/" element={<ProgramDirectorDashboard />} />
+      <Route path="/gestionar-usuarios" element={<ProgramDirectorUserManagement />} />
+      <Route path="/" element={<ProgramDirectorStatistics />} />
     </Routes>
   );
 };
