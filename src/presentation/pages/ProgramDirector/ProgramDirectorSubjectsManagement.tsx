@@ -76,7 +76,7 @@ const transformCourseData = (courses: Course[], teachers: Teacher[], subjects: S
     // Si no hay datos del teacher en la respuesta, buscar en la lista local
     let teacherData = course.teacher;
     if (!teacherData && course.teacherUserId) {
-      teacherData = teachers.find(t => t.id === course.teacherUserId);
+      teacherData = teachers.find(t => String(t.id) === String(course.teacherUserId));
       console.log('Teacher encontrado localmente:', teacherData);
     }
     
@@ -134,6 +134,8 @@ const ProgramDirectorSubjectsManagement: React.FC = () => {
       
       const data: Course[] = await response.json();
       console.log('Datos recibidos de la API:', data); // Debug
+      console.log('Teachers al momento de transformar:', teachers);
+      console.log('Subjects al momento de transformar:', subjects);
       
       if (!Array.isArray(data)) {
         throw new Error('Los datos recibidos no son un array');
@@ -166,7 +168,7 @@ const ProgramDirectorSubjectsManagement: React.FC = () => {
   // Función para obtener profesores de la API
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:3000/api/v1/auth/users/teachers');
+      const response = await fetch('http://localhost:3000/api/v1/auth/users/teachers');
       
       if (!response.ok) {
         throw new Error('Error al obtener los profesores');
@@ -187,10 +189,10 @@ const ProgramDirectorSubjectsManagement: React.FC = () => {
       
       try {
         await Promise.all([
-          fetchCourses(),
           fetchSubjects(),
           fetchTeachers()
         ]);
+        await fetchCourses();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar datos');
       } finally {
